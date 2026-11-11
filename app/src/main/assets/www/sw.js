@@ -1,6 +1,6 @@
 /* Service worker de UFC Pocket Edition: guarda el juego en el celular para abrirlo como app y sin internet.
    Cuando cambies algo y lo subas, aumentá VERSION para que los celulares bajen lo nuevo. */
-const VERSION='pmma-v18';
+const VERSION='pmma-v19';
 const ARCHIVOS=[
  "./",
  "index.html",
@@ -8,6 +8,7 @@ const ARCHIVOS=[
  "css/estilos.css",
  "css/menu-imagenes.css",
  "js/app.js",
+ "js/carga.js",
  "js/carrera.js",
  "js/config.js",
  "js/crear.js",
@@ -19,6 +20,7 @@ const ARCHIVOS=[
  "js/juego.js",
  "js/mando.js",
  "js/menu.js",
+ "js/musica.js",
  "js/navegacion.js",
  "js/nube-config.js",
  "js/nube.js",
@@ -39,7 +41,10 @@ const ARCHIVOS=[
  "assets/menu/torneo.png",
  "assets/sprites/base-mascara.png",
  "assets/sprites/base.png",
- "assets/sprites/pelos.png"
+ "assets/sprites/pelos.png",
+ "assets/carga/carga1.jpg",
+ "assets/carga/carga2.jpg",
+ "assets/carga/carga3.jpg"
 ];
 // Guardar los archivos de a uno: si alguno falta en el servidor, el resto se guarda igual
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>Promise.allSettled(ARCHIVOS.map(f=>c.add(f)))).then(()=>self.skipWaiting()));});

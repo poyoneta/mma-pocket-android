@@ -20,7 +20,7 @@ function startFight(pd,rd,ctx){
   texts:[],parts:[],shake:0,flashRed:0,cards:[],t:0,paused:false,res:null,koT:0,
   bar:{x:0,d:1,zc:.5,zw:.25,cd:0},gT:1.2,pSub:0,rSub:0,subOn:false,subT:0,esc:0,pEsc:0,defT:0,gAnim:0,gAtk:'p',pSubName:SUBS[0],rSubName:SUBS[0]};
  snapshotRound();buffer=null;clearInput();
- showScreen('fight');hideOv();setPad('stand');if(typeof vpStart==='function')vpStart();
+ showScreen('fight');hideOv();setPad('stand');if(typeof pantallaCarga==='function'&&!(ctx&&ctx.rounds===1&&/SPARRING/.test(ctx.title||'')))pantallaCarga();if(typeof vpStart==='function')vpStart();
  $('#hpN').textContent=G.p.d.last;$('#hrN').textContent=G.r.d.last;$('#rseg').innerHTML='<i></i>'.repeat(G.rounds);
  requestAnimationFrame(resize);
  ticker(`${ctx.title?ctx.title+' · ':''}Round 1: ${G.p.d.last} contra ${G.r.d.last}.`);sfx('bell');

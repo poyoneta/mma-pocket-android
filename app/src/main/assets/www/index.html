@@ -14,17 +14,19 @@
 <meta name="apple-mobile-web-app-title" content="Pocket MMA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&display=swap">
-<link rel="stylesheet" href="css/estilos.css?v=18">
+<link rel="stylesheet" href="css/estilos.css?v=19">
 <!-- Imágenes del menú recortadas de tu captura (solo copia local) -->
-<link rel="stylesheet" href="css/menu-imagenes.css?v=18">
+<link rel="stylesheet" href="css/menu-imagenes.css?v=19">
 </head>
 <body>
 <!-- Pantalla de carga: si algo falla al arrancar, muestra el error en vez de quedar en negro -->
-<div id="boot" style="position:fixed;inset:0;z-index:99;background:#111 url(assets/portada.png) center/contain no-repeat;image-rendering:pixelated;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;font-family:Arial,sans-serif;text-align:center;padding:20px 20px 28px">
+<div id="boot" style="position:fixed;inset:0;z-index:99;background:#111 center/contain no-repeat;image-rendering:pixelated;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;font-family:Arial,sans-serif;text-align:center;padding:20px 20px 28px">
   <div style="font-weight:800;font-size:34px;letter-spacing:.02em;text-shadow:0 2px 8px #000">POCKET <span style="color:#d20a0a">MMA</span></div>
   <div id="bootMsg" style="color:#ddd;font-size:15px;text-shadow:0 1px 4px #000">Cargando…</div>
 </div>
 <script>
+ /* pantalla de carga al azar: la portada o una de assets/carga */
+ (function(){var L=["assets/portada.png","assets/carga/carga1.jpg","assets/carga/carga2.jpg","assets/carga/carga3.jpg"],i=Math.floor(Math.random()*L.length),b=document.getElementById("boot");b.style.backgroundImage="url("+L[i]+")";if(i>0){b.firstElementChild.style.display="none";}})();
  (function(){var n=0;function show(t){var m=document.getElementById('bootMsg'),b=document.getElementById('boot');if(!m||b.style.display==='none'||n++>3)return;m.style.color='#ff8a7a';m.innerHTML+='<br><small>Error: '+String(t).replace(/</g,'&lt;')+'</small><br><button onclick="location.reload()" style="margin-top:10px;padding:10px 18px;background:#d20a0a;color:#fff;border:0;font-weight:700">REINTENTAR</button>';}
  window.addEventListener('error',function(e){var s=e.target&&(e.target.src||e.target.href)||'';if(/fonts\.g|jsdelivr/.test(s))return;show((e.message?e.message+(e.filename?' ('+e.filename.split('/').pop()+':'+e.lineno+')':''):'archivo que no cargó: '+((e.target&&(e.target.src||e.target.href))||'?')));},true);
  window.addEventListener('unhandledrejection',function(e){show(e.reason&&e.reason.message||e.reason);});
@@ -263,6 +265,7 @@
 
 <div id="ov" hidden><div class="card" id="ovc"></div></div>
 <!-- En el celular se juega siempre acostado -->
+<div id="cargaPelea" hidden><div class="cp-tip"><b>CONSEJO</b><span id="cpTip"></span></div></div>
 <div class="rothint" id="rotHint" hidden>
   <div class="rotph"></div>
   <h3>GIRÁ EL CELULAR</h3>
@@ -270,26 +273,28 @@
 </div>
 
 <!-- El orden importa: cada archivo usa cosas de los anteriores -->
-<script src="js/config.js?v=18"></script>
-<script src="data/peleadores.js?v=18"></script>
-<script src="data/sprites.js?v=18"></script>
-<script src="data/cuerpo-base.js?v=18"></script>
-<script src="js/dibujo.js?v=18"></script>
-<script src="js/cuerpos.js?v=18"></script>
-<script src="js/sonido.js?v=18"></script>
-<script src="js/juego.js?v=18"></script>
-<script src="js/menu.js?v=18"></script>
-<script src="js/navegacion.js?v=18"></script>
-<script src="js/crear.js?v=18"></script>
-<script src="js/torneo.js?v=18"></script>
-<script src="js/carrera.js?v=18"></script>
-<script src="js/fichas.js?v=18"></script>
-<script src="js/mando.js?v=18"></script>
-<script src="js/iconos.js?v=18"></script>
-<script src="js/tactil.js?v=18"></script>
-<script src="js/nube-config.js?v=18"></script>
-<script src="js/nube.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
-<script src="js/inicio.js?v=18"></script>
+<script src="js/config.js?v=19"></script>
+<script src="data/peleadores.js?v=19"></script>
+<script src="data/sprites.js?v=19"></script>
+<script src="data/cuerpo-base.js?v=19"></script>
+<script src="js/dibujo.js?v=19"></script>
+<script src="js/cuerpos.js?v=19"></script>
+<script src="js/sonido.js?v=19"></script>
+<script src="js/juego.js?v=19"></script>
+<script src="js/menu.js?v=19"></script>
+<script src="js/navegacion.js?v=19"></script>
+<script src="js/crear.js?v=19"></script>
+<script src="js/torneo.js?v=19"></script>
+<script src="js/carrera.js?v=19"></script>
+<script src="js/fichas.js?v=19"></script>
+<script src="js/mando.js?v=19"></script>
+<script src="js/iconos.js?v=19"></script>
+<script src="js/tactil.js?v=19"></script>
+<script src="js/nube-config.js?v=19"></script>
+<script src="js/nube.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
+<script src="js/musica.js?v=19"></script>
+<script src="js/carga.js?v=19"></script>
+<script src="js/inicio.js?v=19"></script>
 </body>
 </html>
