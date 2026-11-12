@@ -30,20 +30,17 @@ const ARCH=[
  ['Muay thai',{str:82,pow:78,spd:74,wre:58,tdd:70,bjj:52,car:84,chin:78}],
  ['Sambo',{str:66,pow:70,spd:64,wre:84,tdd:78,bjj:82,car:74,chin:74}]
 ];
-// Peleador al azar. g = 'm' o 'f' (si no se pasa, sale según la división, o masculino)
-const GEN_F={first:['Valentina','Camila','Lucía','Martina','Sofía','Julieta','Agustina','Florencia','Micaela','Antonella','Carolina','Paula','Daniela','Luana','Beatriz','Larissa','Ana','Mariana','Yuki','Aiko','Natalia','Irina','Zarina','Amara','Abena','Ingrid','Freya','Elena','Chiara','Inés','Ximena','Renata','Tamara','Rocío','Brenda','Aylén'],
- nick:['La Leona','La Pantera','Rayo','Dinamita','La Loba','Cobra','Tormenta','La Reina','Huracán','La Tigresa','Furia','Trueno','Fénix','Mamba','La Gata','Valkiria','Relámpago','Amazona','La Fiera','Diamante','Avispa','La Jefa']};
-const PEIN_F=()=>{const L=CUERPO_BASE.grupos.map((g,i)=>g==='Largo'||g==='Rizado'?i:-1).filter(i=>i>=0);return pick(L);};
-const generoDe=div=>{const d=DIVISIONES.find(x=>x.id===div);return d&&d.g==='f'?'f':'m';};
+// Peleador al azar (todas las divisiones son masculinas)
+const generoDe=()=>'m';
 function randFighter(g,div){
- g=g||(div?generoDe(div):'m');
+ g='m';
  const[style,base]=pick(ARCH),s={};for(const k in base)s[k]=clamp(Math.round(base[k]+rand(-8,8)),35,97);
  // los pesados pegan más y son más lentos; los livianos al revés
  const D=div&&DIVISIONES.find(x=>x.id===div);if(D){const w=(D.lb-115)/150;s.pow=clamp(Math.round(s.pow+(w-.4)*14),35,97);s.spd=clamp(Math.round(s.spd-(w-.4)*14),35,97);s.car=clamp(Math.round(s.car-(w-.4)*10),35,97);}
- const first=pick(g==='f'?GEN_F.first:GEN.first),last=pick(GEN.last),sh=pick(GEN.shorts);
- const look={skin:pick(GEN.skins),shorts:sh,peinado:typeof CUERPO_BASE==='undefined'?null:g==='f'?PEIN_F():(rnd()<.1?-1:Math.floor(rnd()*CUERPO_BASE.pelos.length)),pelo:rnd()<.7?null:pick(['#141110','#3a2416','#6b4423','#a8743a','#d8b46a','#b5502a'])};
- if(g==='f')look.top=pick(['#16181d',sh,'#c8202f','#f4f4f4']);
- const f={name:first+' '+last,first,last,nick:`"${pick(g==='f'?GEN_F.nick:GEN.nick)}"`,flag:pick(GEN.flag),style,s,look,g};
+ const first=pick(GEN.first),last=pick(GEN.last),CBx=typeof CUERPO_BASE==='undefined'?null:CUERPO_BASE;
+ const si=CBx?Math.floor(rnd()*CBx.shorts.length):null,sh=CBx?CBx.shorts[si][4]:pick(GEN.shorts);
+ const look={skin:pick(GEN.skins),shorts:sh,short:si,guante:CBx?pick([0,0,0,1,2,3,4]):0,peinado:CBx?(rnd()<.1?-1:Math.floor(rnd()*CBx.pelos.length)):null,pelo:rnd()<.7?null:pick(['#141110','#3a2416','#6b4423','#a8743a','#d8b46a','#b5502a'])};
+ const f={name:first+' '+last,first,last,nick:`"${pick(GEN.nick)}"`,flag:pick(GEN.flag),style,s,look,g};
  if(div)f.div=div;return f;
 }
 

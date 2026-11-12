@@ -20,7 +20,7 @@ const rankTxt=f=>f.custom?'Tuyo':f.rank===0?'Campeón':f.rank!=null?'#'+f.rank:'
 function divOptions(val,withAll){
  const op=d=>`<option value="${d.id}"${d.id===val?' selected':''}>${d.nombre} · ${d.kg} kg</option>`;
  return(withAll?`<option value="todas"${val==='todas'?' selected':''}>Todas las divisiones</option>`:'')
-  +`<optgroup label="Masculino">${DIVISIONES.filter(d=>d.g!=='f').map(op).join('')}</optgroup><optgroup label="Femenino">${DIVISIONES.filter(d=>d.g==='f').map(op).join('')}</optgroup>`;}
+  +DIVISIONES.map(op).join('');}
 
 /* ---------------- Pantallas ---------------- */
 const SCREENS=['home','quick','create','tourney','career','fight'];

@@ -10,8 +10,8 @@ android {
         applicationId "com.pocketmma.juego"
         minSdk 24
         targetSdk 34
-        versionCode 9
-        versionName "1.8"
+        versionCode 13
+        versionName "2.2"
     }
 
     buildTypes {

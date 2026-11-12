@@ -532,16 +532,18 @@ function editarPeleador(){
  showOv(`<h3>EDITAR PELEADOR</h3><div class="cr6-edit">
   <canvas id="kEdPrev" width="96" height="112"></canvas>
   <div><label>Apodo</label><input id="kNick" value="${esc((C.f.nick||'').replace(/"/g,''))}" placeholder="Apodo"><label>Música de entrada</label><select id="kWalk" style="width:100%;box-sizing:border-box;margin:4px 0 2px">${musOpciones(C.walkout||'')}</select><small style="display:block;color:#8b93a5;margin-bottom:6px">Suena cuando salís a pelear. Podés sumar tus canciones desde el botón ♪ del menú.</small>
-  <label>Peinado</label><div class="cr6-heads">${pelos.map(i=>`<button class="hb-pein" data-ek="peinado" data-ev="${i}" aria-pressed="${String(peinadoDe(C.f))===String(i)}"><canvas width="40" height="40" data-ph="${i}"></canvas></button>`).join('')}</div>
+  <label>Peinado</label><div class="cr6-heads">${pelos.map(i=>`${i>=0&&CB.grupos[i]!==CB.grupos[i-1]?`<span class="hgrp">${CB.grupos[i]}</span>`:i<0?'<span class="hgrp">Pelado</span>':''}<button class="hb-pein" data-ek="peinado" data-ev="${i}" aria-pressed="${String(peinadoDe(C.f))===String(i)}"><canvas width="40" height="40" data-ph="${i}"></canvas></button>`).join('')}</div>
   <label>Color de pelo</label><div class="opts">${sw('pelo',pc)}</div>
   <label>Piel</label><div class="opts">${sw('skin',GEN.skins)}</div>
-  <label>Short</label><div class="opts">${sw('shorts',GEN.shorts)}</div></div></div>
+  <label>Short</label><div class="opts">${ropaHtml('short',ed.short,'data-ek="short"')}</div>
+  <label>Guantes</label><div class="opts">${ropaHtml('guante',ed.guante,'data-ek="guante"')}</div></div></div>
   <div class="btns"><button class="go" id="kEdOk">GUARDAR</button><button class="alt" data-act="close">CANCELAR</button></div>`);
  const ov=$('#ovc');ov.querySelector('.card')||0;
+ ov.querySelectorAll('canvas[data-ropa]').forEach(cv=>dibujarRopa(cv,cv.dataset.ropa,+cv.dataset.ri));
  const redraw=()=>{ov.querySelectorAll('canvas[data-ph]').forEach(cv=>dibujarCabeza(cv,+cv.dataset.ph,ed.skin,ed.pelo));
   const g=$('#kEdPrev').getContext('2d');g.clearRect(0,0,96,112);drawAnimated(g,{...C.f,look:ed},48,108,1,'guard',0,'#10141c');};
  redraw();
- ov.onclick=e=>{const b=e.target.closest('[data-ek]');if(!b)return;const k=b.dataset.ek;ed[k]=k==='peinado'?+b.dataset.ev:(b.dataset.ev||null);
+ ov.onclick=e=>{const b=e.target.closest('[data-ek]');if(!b)return;const k=b.dataset.ek,v=b.dataset.ev!=null?b.dataset.ev:b.dataset.lv;ed[k]=k==='peinado'||k==='short'||k==='guante'?+v:(v||null);if(k==='short')ed.shorts=CB.shorts[+v][4];
   ov.querySelectorAll(`[data-ek="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b));redraw();};
  $('#kEdOk').onclick=()=>{const n=$('#kNick').value.trim();C.f.nick=n?`"${n}"`:'';C.walkout=$('#kWalk').value||null;C.f.look=ed;ov.onclick=null;saveC();hideOv();renderCareer();};
 }

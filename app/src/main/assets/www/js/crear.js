@@ -6,8 +6,8 @@ const LOOKOPTS=[
  ['peinado','Peinado','head',null],
  ['pelo','Color de pelo','hairc',['#141110','#3a2416','#6b4423','#a8743a','#d8b46a','#b5502a','#9a9a9a','#e8e4dc']],
  ['skin','Piel','sw',GEN.skins],
- ['shorts','Short','sw',GEN.shorts],
- ['top','Top (peleadoras)','sw',['#16181d','#c8202f','#f4f4f4','#1d4fa3','#1d7a46','#6b2d8f','#e07a1f','#f6d32d']]
+ ['short','Short','ropa','short'],
+ ['guante','Guantes','ropa','guante']
 ];
 const BUDGET=560,SMIN=40,SMAX=95;
 let draft=null;
@@ -24,7 +24,12 @@ function openCreate(){if(!draft)newDraft();renderCreate();}
 const ptsLeft=()=>BUDGET-Object.values(draft.s).reduce((a,c)=>a+c,0);
 function draftFighter(){
  const first=draft.first.trim()||'Tu',last=draft.last.trim()||'Peleador',nick=draft.nick.trim();
- return{id:draft.id,first,name:first+' '+last,last,nick:nick?`"${nick}"`:'',flag:draft.flag,div:draft.div,g:generoDe(draft.div),style:draft.style,s:{...draft.s},look:{...draft.look},custom:1};
+ return{id:draft.id,first,name:first+' '+last,last,nick:nick?`"${nick}"`:'',flag:draft.flag,div:draft.div,g:'m',style:draft.style,s:{...draft.s},look:{...draft.look},custom:1};
+}
+// Botones con el dibujo de cada short o guante de tu hoja (sin marca)
+function ropaHtml(tipo,v,attr){
+ const L=tipo==='guante'?CB.guantes:CB.shorts,cur=v==null?(tipo==='guante'?0:-1):+v;
+ return L.map((r,i)=>`<button class="hb-ropa" ${attr} data-lv="${i}" aria-pressed="${cur===i}" aria-label="${r[5]}" title="${r[5]}"><canvas width="${tipo==='guante'?30:40}" height="${tipo==='guante'?30:34}" data-ropa="${tipo}" data-ri="${i}"></canvas></button>`).join('');
 }
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 function optHtml(k,t,opts){
@@ -36,6 +41,7 @@ function optHtml(k,t,opts){
    html+=`<button class="hb-pein" data-lk="${k}" data-lv="${i}" aria-pressed="${cur===String(i)}" aria-label="${g} ${i+1}"><canvas width="40" height="40" data-ph="${i}"></canvas></button>`;});
   return html;
  }
+ if(t==='ropa')return ropaHtml(opts,v,'data-lk="'+k+'"');
  const sw=c=>`<button class="sw" style="background:${c}" data-lk="${k}" data-lv="${c}" aria-pressed="${v===c}" aria-label="Color ${c}"></button>`;
  if(t==='sw')return opts.map(sw).join('');
  if(t==='hairc')return`<button class="ob" data-lk="${k}" data-lv="" aria-pressed="${!v}">Natural</button>`+opts.map(sw).join('');
@@ -69,25 +75,24 @@ $('#cLast').oninput=e=>{draft.last=e.target.value;updPrevName();};
 $('#cNick').oninput=e=>{draft.nick=e.target.value;updPrevName();};
 $('#cFlag').onchange=e=>{draft.flag=e.target.value;updPrevName();};
 $('#cDiv').innerHTML=divOptions('ligero',false);
-$('#cDiv').onchange=e=>{const antes=generoDe(draft.div);draft.div=e.target.value;
- // al pasar a una división femenina (o al revés) se ajusta el look: top y peinado
- if(generoDe(draft.div)!==antes){if(generoDe(draft.div)==='f'){draft.look.top=draft.look.top||'#16181d';draft.look.peinado=PEIN_F();}else delete draft.look.top;renderLook();}
- updPrevName();};
+$('#cDiv').onchange=e=>{draft.div=e.target.value;updPrevName();};
 $('#cStyle').onchange=e=>{draft.style=e.target.value;draft.s=baseStats(draft.style);renderStats();updPrevName();};
 function renderLook(){
- $('#cLook').innerHTML=LOOKOPTS.filter(([k])=>k!=='top'||generoDe(draft.div)==='f').map(([k,l,t,o])=>`<div class="lrow${t==='head'?' lhead':''}"><span class="ll">${l}</span><div class="opts" role="group" aria-label="${l}">${optHtml(k,t,o)}</div></div>`).join('');
+ $('#cLook').innerHTML=LOOKOPTS.map(([k,l,t,o])=>`<div class="lrow${t==='head'?' lhead':''}"><span class="ll">${l}</span><div class="opts" role="group" aria-label="${l}">${optHtml(k,t,o)}</div></div>`).join('');
  drawHeadBtns();
 }
 // miniaturas de los peinados (con la piel y el color de pelo elegidos)
 function drawHeadBtns(){
- if(typeof cbListo==='undefined'||cbListo<3)return;
+ if(typeof cbListo==='undefined'||cbListo<CB_TOTAL)return;
+ $('#cLook').querySelectorAll('canvas[data-ropa]').forEach(cv=>dibujarRopa(cv,cv.dataset.ropa,+cv.dataset.ri));
  $('#cLook').querySelectorAll('canvas[data-ph]').forEach(cv=>dibujarCabeza(cv,+cv.dataset.ph,draft.look.skin,draft.look.pelo));
 }
-$('#cRand').onclick=()=>{draft.look=randFighter(generoDe(draft.div)).look;renderLook();};
+$('#cRand').onclick=()=>{draft.look=randFighter('m').look;renderLook();};
 $('#cNew').onclick=()=>{newDraft();renderCreate();$('#cFirst').focus();};
 $('#cLook').addEventListener('click',e=>{
  const b=e.target.closest('[data-lk]');if(!b)return;
- draft.look[b.dataset.lk]=b.dataset.lk==='peinado'?+b.dataset.lv:(b.dataset.lv||null);
+ const lk=b.dataset.lk;draft.look[lk]=lk==='peinado'||lk==='short'||lk==='guante'?+b.dataset.lv:(b.dataset.lv||null);
+ if(lk==='short')draft.look.shorts=CB.shorts[+b.dataset.lv][4];
  b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
  if(b.dataset.lk==='skin'||b.dataset.lk==='pelo')drawHeadBtns();
 });

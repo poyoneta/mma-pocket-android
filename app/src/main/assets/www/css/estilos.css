@@ -1071,3 +1071,9 @@ ul.help b,details b{color:#fff;box-shadow:inset 0 -2px var(--red)}
 .cr6-pm .pm-logo{flex:none}.cr6-callc .pm-logo{flex:none}
 .vb.vhold[data-hold="check"].on{background:rgba(120,200,255,.4)}
 .vleft .vb.vi small{line-height:1.05;white-space:normal;text-align:center;width:64px;bottom:-22px}
+/* shorts y guantes de la hoja de ropa */
+.hb-ropa{padding:2px;background:#202020;border:2px solid #333;line-height:0;margin:1px}
+.hb-ropa canvas{display:block;height:34px;width:auto;image-rendering:pixelated}
+.hb-ropa[aria-pressed="true"]{border-color:var(--red);background:#2a1212}
+.hb-ropa:hover{border-color:#777}
+.cr6-edit .hb-ropa canvas{height:28px}

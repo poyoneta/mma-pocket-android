@@ -22,7 +22,7 @@ function presRetrato(cv,d){
 }
 function presDivision(){
  const id=(G.p.d.div||G.r.d.div||'');const D=(typeof DIVISIONES!=='undefined'&&DIVISIONES.find(x=>x.id===id))||null;
- const nom=D?D.nombre:'Peso abierto';const fem=D&&D.g==='f';
+ const nom=D?D.nombre:'Peso abierto';const fem=false;
  const partes=nom.replace(/\s*\(.*\)/,'').split(' ');
  return{nom:nom.toUpperCase(),a:(partes[0]||'PESO').toUpperCase(),b:(partes.slice(1).join(' ')||'').toUpperCase()+(fem?' FEMENINO':''),kg:D?`${D.kg} KG · ${D.lb} LB`:''};
 }

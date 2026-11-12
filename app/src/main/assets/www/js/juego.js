@@ -446,10 +446,23 @@ function renderGround(){
  c.drawImage(bgS,0,0);
  const pTop=G.top==='p',topF=pTop?G.p:G.r,botF=pTop?G.r:G.p;
  const atkTop=G.gAnim>0&&((G.gAtk==='p')===pTop);
+ const subOn=pTop?G.pSub>15:G.subOn,subAbajo=!pTop&&G.pSub>15&&!G.subOn;
+ const SG=!topF.d.sprite&&!botF.d.sprite&&typeof sueloDe==='function'?sueloDe(topF.d,botF.d):null;
+ if(SG){
+  // piso con tu hoja de los dos peleadores: control, golpes desde arriba, sumisión desde arriba o desde abajo
+  const cx=Math.round(W/2),gy=128,t=G.t;
+  const key=subOn?'sub':subAbajo?'bsub':atkTop?(G.gAnim>.14?'p1':'p2'):'idle';
+  const[fx,fy,fw,fh]=SG.frames[key];
+  const jit=(subOn||subAbajo)?Math.round(Math.sin(t*22)):0,resp=key==='idle'?Math.round(Math.sin(t*3)*.6):0;
+  ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(cx-Math.round(fw/2)+4,gy-2,fw-8,4);
+  if((topF.hit>0||botF.hit>0)&&Math.floor(t*20)%2)ctx.filter='brightness(1.8)';
+  ctx.imageSmoothingEnabled=false;ctx.drawImage(SG.img,fx,fy,fw,fh,cx-Math.round(fw/2)+jit,gy-fh+resp,fw,fh);ctx.filter='none';
+ }else{
  gcx.clearRect(0,0,76,44);c=gcx;
  drawLying(botF,{def:!pTop&&G.defT>0,hit:botF.hit>0});
- drawMount(topF,{punch:atkTop,sub:pTop?G.pSub>15:G.subOn,hit:topF.hit>0});
+ drawMount(topF,{punch:atkTop,sub:subOn,hit:topF.hit>0});
  c=ctx;const gx=Math.round((W-152)/2);c.fillStyle='rgba(0,0,0,.25)';c.fillRect(gx+4,125,140,4);c.drawImage(gc,gx,40,152,88);
+ }
  if(G.phase==='fight'||G.phase==='ko'){
   if(pTop){meter(4,'ESCAPE RIVAL',G.esc,'#5aa2ff');meter(24,'TU SUMISIÓN',G.pSub,'#f2c14e');}
   else{meter(4,'TU ESCAPE',G.pEsc,'#4fcf6a');
