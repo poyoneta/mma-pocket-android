@@ -29,7 +29,7 @@ function resolveStage(){
 function playTourney(){
  const m=myMatch();if(!m)return;
  const opp=m.a===T.me?m.b:m.a,stage=STAGES[T.stages.length-1];
- startFight(T.me,opp,{kind:'tourney',rounds:3,title:'TORNEO · '+stage.toUpperCase(),onDone(res){
+ startFight(T.me,opp,{kind:'tourney',esc:(escenarioTorneo(stage)||{}).id,rounds:3,title:'TORNEO · '+stage.toUpperCase(),onDone(res){
   let won=res.w==='p',meth=res.method;
   if(res.w==='d'){won=rnd()<.5;meth='Decisión del juez extra';}
   m.w=won?T.me:opp;m.m=meth;

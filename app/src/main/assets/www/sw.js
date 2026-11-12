@@ -1,6 +1,6 @@
-/* Service worker de UFC Pocket Edition: guarda el juego en el celular para abrirlo como app y sin internet.
+/* Service worker de Pocket MMA: guarda el juego en el celular para abrirlo como app y sin internet.
    Cuando cambies algo y lo subas, aumentá VERSION para que los celulares bajen lo nuevo. */
-const VERSION='pmma-v19';
+const VERSION='pmma-v26';
 const ARCHIVOS=[
  "./",
  "index.html",
@@ -14,6 +14,7 @@ const ARCHIVOS=[
  "js/crear.js",
  "js/cuerpos.js",
  "js/dibujo.js",
+ "js/escenarios.js",
  "js/fichas.js",
  "js/iconos.js",
  "js/inicio.js",
@@ -24,6 +25,8 @@ const ARCHIVOS=[
  "js/navegacion.js",
  "js/nube-config.js",
  "js/nube.js",
+ "js/presenta.js",
+ "js/promotoras.js",
  "js/sonido.js",
  "js/tactil.js",
  "js/torneo.js",
@@ -39,9 +42,12 @@ const ARCHIVOS=[
  "assets/menu/crear.png",
  "assets/menu/pelea.png",
  "assets/menu/torneo.png",
+ "assets/sprites/alejandro-zanella.png",
  "assets/sprites/base-mascara.png",
  "assets/sprites/base.png",
  "assets/sprites/pelos.png",
+ "assets/sprites/plantilla-48.png",
+ "assets/sprites/plantilla-guia.png",
  "assets/carga/carga1.jpg",
  "assets/carga/carga2.jpg",
  "assets/carga/carga3.jpg"

@@ -1,5 +1,5 @@
 /* ---------------- Crear peleador ---------------- */
-const FLAGS=['ARG','BRA','URU','CHI','PAR','BOL','PER','COL','VEN','ECU','MEX','USA','CAN','ESP','ITA','FRA','IRL','ENG','POL','RUS','KAZ','TUR','NGA','GHA','JPN','CHN','KOR','AUS','NZL'];
+const FLAGS=['ARG','BRA','URU','CHI','PAR','BOL','PER','COL','VEN','ECU','MEX','USA','CAN','ESP','ITA','FRA','IRL','ENG','POL','RUS','KAZ','TUR','NGA','GHA','JPN','CHN','KOR','AUS','NZL','GEO','ARM','AZE','KGZ','UZB','UKR','POR','GER','NED','SWE','CZE','SRB','CRO','LTU','MDA','RSA','MAR','IRQ','MMR','DOM','PAN','ARE','SAU'];
 // [clave, etiqueta, tipo, opciones]  tipo: sw = colores, swn = colores con "ninguno", txt = texto
 // Apariencia: cuerpo dibujado (tu hoja) + peinado + colores
 const LOOKOPTS=[

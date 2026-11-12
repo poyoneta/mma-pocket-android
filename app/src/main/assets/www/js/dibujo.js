@@ -108,7 +108,7 @@ function spriteFC(f,o){
  if((key==='pwind'||key==='kwind')&&S.plantilla&&F[o.act]){list=F[o.act];wind=true;}   // preparación: primer cuadro del golpe
  else if(!list){key='guard';list=F.guard;}
  const vaiven=n=>n<3?[...Array(n).keys()]:[...Array(n).keys(),...Array.from({length:n-2},(_,i)=>n-2-i)];   // 0,1,2,3,2,1
- const golpe=S.plantilla&&list&&list.length>1&&!['guard','walk','win','ko','raise','block','crouch','hurt'].includes(key);
+ const golpe=S.plantilla&&list&&list.length>1&&!['guard','walk','win','ko','raise','block','check','crouch','hurt'].includes(key);
  const hi=list&&list.length>=4?2:1;   // cuadro en el que el golpe pega
  if(wind)idx=Math.min(hi-1,Math.floor((o.prog||0)*hi));
  else if(golpe&&o.ph==='rec'){
@@ -243,6 +243,7 @@ function drawSide(f,gy,o){
 }
 // Dibuja el sprite con contorno de 1 pixel generado a partir de la silueta
 function blitFighter(f,o,x,gy,face,rot){
+ x+=face*(o.dx||0);gy+=o.dy||0;
  if(spriteOf(f.d))spriteFC(f,o);else{const prev=c;c=fcx;fcx.clearRect(0,0,SPW,SPH);fcx.save();fcx.translate(SOX,0);drawSide(f,SOY,o);fcx.restore();c=prev;}
  ocx.globalCompositeOperation='source-over';ocx.clearRect(0,0,SPW,SPH);ocx.drawImage(fc,0,0);
  ocx.globalCompositeOperation='source-in';ocx.fillStyle=o.sil?o.sil:o.flash?(o.flashCol||'#ffd23f'):(o.hit?'#ffffff':'#07080c');ocx.fillRect(0,0,SPW,SPH);ocx.globalCompositeOperation='source-over';
@@ -250,6 +251,7 @@ function blitFighter(f,o,x,gy,face,rot){
  if(rot){g.translate(0,gy);g.rotate(rot);g.translate(0,-gy);}
  const ox=-SOX,oy=gy-SOY,th=o.flash?2:1;
  if(o.sil){g.drawImage(oc,ox,oy);g.restore();return;}
+ if(o.trail){g.globalAlpha=.16;g.drawImage(fc,ox-9,oy);g.globalAlpha=.3;g.drawImage(fc,ox-5,oy);g.globalAlpha=1;}   // estela del golpe
  for(const[dx,dy]of[[th,0],[-th,0],[0,th],[0,-th]])g.drawImage(oc,ox+dx,oy+dy);
  g.drawImage(fc,ox,oy);g.restore();
 }
@@ -296,38 +298,47 @@ function polyFill(pts,col){c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):
 // Arena: tribuna, jaula del octágono (fondo y costados), piso con la línea del octágono y logo
 function buildBg(){
  const cnv=document.createElement('canvas');cnv.width=W;cnv.height=H;const prev=c;c=cnv.getContext('2d');
- const g0=c.createLinearGradient(0,0,0,100);g0.addColorStop(0,'#04060a');g0.addColorStop(1,'#151a24');c.fillStyle=g0;c.fillRect(0,0,W,100);
- let seed=7;const sr=()=>(seed=(seed*16807)%2147483647)/2147483647;
- const crowd=['#3a2f3a','#2c3446','#463a2c','#2f3d33','#4a2c2c','#30303a','#5a4a36'];
- for(let y=24;y<88;y+=5)for(let x=-2;x<W;x+=4){const col=crowd[Math.floor(sr()*crowd.length)];R(x+Math.round(sr()*2),y,3,4,shade(col,-.45+y/88*.3));R(x+1,y-1,2,2,shade('#b48a6e',-.6+sr()*.2+y/300));}
- for(const lx of[26,70,122,166].map(v=>Math.round(v*W/192))){const lg=c.createRadialGradient(lx,4,0,lx,4,26);lg.addColorStop(0,'rgba(255,244,214,.42)');lg.addColorStop(1,'rgba(255,244,214,0)');c.fillStyle=lg;c.fillRect(lx-28,0,56,30);R(lx-3,2,6,2,'#fff8e2');}
- // malla del fondo
- for(let y=15;y<88;y++)for(let x=0;x<W;x++)if((x+y)%5===0||(x-y+600)%5===0){c.fillStyle='rgba(130,140,155,.22)';c.fillRect(x,y,1,1);}
- R(0,13,W,3,'#0b0d12');R(0,13,W,1,'#454c59');
- for(const px of[.104,.365,.635,.896].map(v=>Math.round(v*W))){R(px-2,13,5,76,'#08090c');R(px-1,13,1,76,'#353b46');R(px-3,12,7,4,'#15181e');}
- // acolchado de la base con carteles genéricos
- R(0,86,W,10,'#0d0f14');R(0,86,W,1,'#454c59');R(0,95,W,1,'#04050a');
- for(const[x,col]of[[28,'#c8202f'],[50,'#e9e9e9'],[82,'#2c5fb3'],[100,'#e9e9e9'],[130,'#c8202f'],[148,'#e9e9e9']].map(([x,c])=>[Math.round(x*W/192),c])){R(x,88,14,5,col);R(x+2,90,10,1,shade(col,-.5));}
- // piso de lona
- const mg=c.createLinearGradient(0,96,0,H);mg.addColorStop(0,'#a9aeb6');mg.addColorStop(.35,'#d3d6db');mg.addColorStop(1,'#e8eaed');c.fillStyle=mg;c.fillRect(0,96,W,H-96);
- for(let i=0;i<14;i++){const y=100+Math.floor(sr()*44),x=Math.floor(sr()*W);R(x,y,8+Math.floor(sr()*16),1,'rgba(0,0,0,.05)');}
- // línea del octágono pintada en el piso
- const op=octPts(W/2,121,W*.45,22);for(let i=0;i<8;i++){const a=op[i],b=op[(i+1)%8];limb(a[0],a[1],b[0],b[1],2,2,'rgba(70,74,82,.55)');}
- // logo central propio
- polyFill(octPts(W/2,124,30,7.5),'#a51b26');polyFill(octPts(W/2,124,25,6),'#c8202f');polyFill(octPts(W/2,124,17,4),'#e8eaed');polyFill(octPts(W/2,124,9,2),'#c8202f');
- // costados de la jaula que vienen hacia la cámara (forma de octágono)
- for(const side of[-1,1]){
-  const x0=side<0?20:W-20,xf=x0+side*-46;
-  c.save();c.beginPath();c.moveTo(x0,13);c.lineTo(xf,-6);c.lineTo(xf,H+20);c.lineTo(x0,96);c.closePath();c.clip();
-  c.fillStyle='rgba(6,8,12,.5)';c.fillRect(0,0,W,H);
-  for(let y=0;y<H;y++)for(let x=side<0?0:x0;x<(side<0?x0:W);x++)if((x+y)%4===0||(x-y+600)%4===0){c.fillStyle='rgba(150,160,175,.28)';c.fillRect(x,y,1,1);}
-  c.restore();
-  limb(x0,96,xf,H+22,6,9,'#0b0d12');limb(x0,95,xf,H+20,1,1,'#454c59');
-  limb(x0,14,xf,-5,3,4,'#0b0d12');
-  R(x0-2,12,5,85,'#08090c');R(x0-1,12,1,85,'#353b46');
- }
- const vg=c.createRadialGradient(W/2,96,40,W/2,96,150);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.5)');c.fillStyle=vg;c.fillRect(0,0,W,H);
+ const E=escActual(),r=escRng([...E.id].reduce((a,ch)=>a*31+ch.charCodeAt(0),7)),fl=escFlags();
+ try{
+  if(E.fondo&&E.jaula)fondoRegional(E,r,fl);else if(E.fondo)fondoCalle(E,r,fl);else fondoArena(E,r,fl);
+  if(E.jaula)jaulaYLona(E,r);else sueloCalle(E,r);
+ }catch(e){console.error(e);}
+ const vg=c.createRadialGradient(W/2,96,70,W/2,96,W*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.16)');c.fillStyle=vg;c.fillRect(0,0,W,H);
  const sp=c.createRadialGradient(W/2,112,6,W/2,118,90);sp.addColorStop(0,'rgba(255,248,230,.18)');sp.addColorStop(1,'rgba(255,248,230,0)');c.fillStyle=sp;c.fillRect(0,0,W,H);
  c=prev;return cnv;
 }
 
+
+/* ---------------- Árbitro ----------------
+   Dibujado con código (pixel art, mismo tamaño que los peleadores): remera negra, pantalón gris,
+   guantes de látex. arm: 0 = brazo abajo, 1 = levantando el brazo del ganador. hand: [x,y] adonde va la mano (local, mirando a la derecha). */
+const refC=document.createElement('canvas');refC.width=120;refC.height=110;const refX=refC.getContext('2d');
+const refO=document.createElement('canvas');refO.width=120;refO.height=110;const refOX=refO.getContext('2d');
+function drawRef(x,gy,face,arm,walk,hand){
+ const prev=c;c=refX;refX.clearRect(0,0,120,110);
+ const ox=50,fy=106,SK='#c99470',SKD='#a5714f',SH='#16181d',SHL='#2b2f38',PA='#3d424c',PAD='#2a2e36',GL='#4f86d9',HA='#2a1d16';
+ const sw=Math.sin(walk||0)*7;
+ // piernas
+ limb(ox-3,fy-38,ox-5-sw,fy-3,8,7,PAD);limb(ox+3,fy-38,ox+5+sw,fy-3,8,7,PA);
+ R(ox-10-sw,fy-4,10,4,'#0b0c10');R(ox+1+sw,fy-4,11,4,'#0b0c10');
+ // brazo de atrás (colgando)
+ limb(ox-6,fy-62,ox-9,fy-46,6,5,SH);limb(ox-9,fy-46,ox-8-sw*.4,fy-34,5,4,SKD);R(ox-11-sw*.4,fy-35,5,5,GL);
+ // torso: remera negra con cuello, hombros más anchos
+ R(ox-11,fy-66,22,6,SH);R(ox-10,fy-60,20,24,SH);R(ox-9,fy-64,5,26,SHL);R(ox-4,fy-67,8,3,'#5b616d');R(ox-10,fy-40,20,3,'#0b0c10');R(ox+3,fy-58,5,3,'#d20a0a');
+ // cuello y cabeza redonda
+ R(ox-3,fy-71,7,6,SKD);
+ disc(ox,fy-80,8,SK);R(ox-7,fy-80,3,6,SKD);R(ox-2,fy-73,9,2,SKD);
+ disc(ox-1,fy-85,6,HA);R(ox-8,fy-87,13,4,HA);R(ox-9,fy-84,4,5,HA);
+ R(ox-3,fy-81,3,4,SKD);R(ox-2,fy-80,1,2,'#e8b892');R(ox+4,fy-82,2,2,'#111');R(ox+3,fy-84,3,1,HA);R(ox+7,fy-78,2,2,SK);R(ox+4,fy-76,3,1,'#7a4a33');
+ // brazo de adelante: de colgando a levantar el brazo del ganador
+ const sh=[ox+5,fy-62],down=[ox+9,fy-36],up=hand||[ox+14,fy-92],k=Math.min(1,arm||0);
+ const hx=down[0]+(up[0]-down[0])*k,hy=down[1]+(up[1]-down[1])*k,el=[(sh[0]+hx)/2+(k>.2?4:2),(sh[1]+hy)/2+(k>.2?3:0)];
+ limb(sh[0],sh[1],el[0],el[1],7,6,SH);limb(el[0],el[1],hx,hy,5,5,SK);R(hx-3,hy-3,6,6,GL);
+ c=prev;
+ // contorno negro como los peleadores
+ refOX.globalCompositeOperation='source-over';refOX.clearRect(0,0,120,110);refOX.drawImage(refC,0,0);
+ refOX.globalCompositeOperation='source-in';refOX.fillStyle='#07080c';refOX.fillRect(0,0,120,110);refOX.globalCompositeOperation='source-over';
+ const g=c;g.save();g.translate(Math.round(x),0);g.scale(face,1);
+ for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])g.drawImage(refO,-ox+dx,gy-fy+dy);
+ g.drawImage(refC,-ox,gy-fy);g.restore();
+}

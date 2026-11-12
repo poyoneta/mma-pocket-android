@@ -8,8 +8,8 @@ porque todos los archivos vienen dentro del APK.
 
 1. Creá un repo nuevo en GitHub, por ejemplo `pocket-mma-android`, y subí esta carpeta entera.
 2. Entrá al repo → pestaña **Actions**. Se ejecuta "Armar APK" solo (tarda unos 5 minutos).
-3. Cuando termine (tilde verde), entrá a esa ejecución y abajo, en **Artifacts**, bajá `pocket-mma-apk`.
-4. Adentro está `app-debug.apk`. Pasalo al celular, abrilo y aceptá "instalar apps de origen desconocido".
+3. Cuando termine (tilde verde), entrá a esa ejecución y abajo, en **Artifacts**, bajá `Pocket MMA APK`.
+4. Adentro está `Pocket MMA.apk`. Pasalo al celular, abrilo y aceptá "instalar apps de origen desconocido".
 
 Cada vez que subas cambios, GitHub arma un APK nuevo.
 

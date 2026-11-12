@@ -1,6 +1,6 @@
 /* ---------------- Mando táctil (celular en horizontal) ----------------
    Botones transparentes con el dibujo de cada golpe (íconos en js/iconos.js):
-   izquierda: stick para caminar + CUBRIRSE y ESQUIVAR (se mantienen apretados)
+   izquierda: stick para caminar + GUARDIA ALTA, GUARDIA BAJA (chequear low kicks) y ESQUIVAR (se mantienen apretados)
    derecha: JAB, RECTO, LOW KICK y HIGH KICK grandes; CROSS IZQ., UPPERCUT, CROSS DER. y DERRIBO más chicos
    En el piso: JAB / RECTO / LOW KICK pasan a ser las tres acciones del piso (cambian de dibujo). */
 const VP={stick:null};
@@ -26,7 +26,7 @@ const vpActive=()=>touchDev.matches&&!isPortrait()&&!PAD.on;
 const ICO_BASE={};document.querySelectorAll('#vpad [data-ico]').forEach(b=>{ICO_BASE[b.dataset.mv||b.dataset.hold||b.id]=[b.dataset.ico,b.querySelector('small')?b.querySelector('small').textContent:''];b.querySelector('i').innerHTML=ICO[b.dataset.ico]||'';});
 // Botones que se mantienen: cubrirse y esquivar (agacharse para que el golpe pase por arriba)
 document.querySelectorAll('[data-hold]').forEach(b=>{
- const k=b.dataset.hold,on=v=>{if(k==='block')input.block=v;else input.down=v;b.classList.toggle('on',v);};
+ const k=b.dataset.hold,on=v=>{if(k==='block')input.block=v;else if(k==='check')input.check=v;else input.down=v;b.classList.toggle('on',v);};
  b.addEventListener('pointerdown',e=>{e.preventDefault();initAudio();b.setPointerCapture(e.pointerId);on(true);});
  for(const ev of['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>on(false));
 });

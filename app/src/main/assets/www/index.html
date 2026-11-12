@@ -14,13 +14,13 @@
 <meta name="apple-mobile-web-app-title" content="Pocket MMA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&display=swap">
-<link rel="stylesheet" href="css/estilos.css?v=19">
+<link rel="stylesheet" href="css/estilos.css?v=26">
 <!-- Imágenes del menú recortadas de tu captura (solo copia local) -->
-<link rel="stylesheet" href="css/menu-imagenes.css?v=19">
+<link rel="stylesheet" href="css/menu-imagenes.css?v=26">
 </head>
 <body>
 <!-- Pantalla de carga: si algo falla al arrancar, muestra el error en vez de quedar en negro -->
-<div id="boot" style="position:fixed;inset:0;z-index:99;background:#111 center/contain no-repeat;image-rendering:pixelated;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;font-family:Arial,sans-serif;text-align:center;padding:20px 20px 28px">
+<div id="boot" style="position:fixed;inset:0;z-index:99;background:#111 center 30%/cover no-repeat;image-rendering:pixelated;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;font-family:Arial,sans-serif;text-align:center;padding:20px 20px 28px">
   <div style="font-weight:800;font-size:34px;letter-spacing:.02em;text-shadow:0 2px 8px #000">POCKET <span style="color:#d20a0a">MMA</span></div>
   <div id="bootMsg" style="color:#ddd;font-size:15px;text-shadow:0 1px 4px #000">Cargando…</div>
 </div>
@@ -42,6 +42,7 @@
         <div class="tb-r">
           <span class="chip" id="hRec" hidden></span>
           <label class="chk"><input type="checkbox" id="snd" checked> Sonido</label>
+          <button class="tbb mus-btn" id="musBtn" title="Reproductor de música">♪</button>
           <button class="tbb" id="fsBtn" hidden>PANTALLA COMPLETA</button>
           <button class="tbb" id="instBtn" hidden>⬇ INSTALAR APP</button>
           <button class="tbb" id="nubeBtn" hidden>☁ GUARDAR EN LA NUBE</button>
@@ -124,6 +125,7 @@
         <span class="hint"><span class="kb"><kbd>↑</kbd><kbd>↓</kbd></span><span class="pd"><i class="gl dp">✚</i>▲▼</span> Rival</span>
         <span class="hint"><span class="kb"><kbd>Q</kbd><kbd>E</kbd></span><span class="pd"><i class="gl sh">L1</i><i class="gl sh">R1</i></span> Info / estadísticas</span>
         <span class="hint"><span class="kb"><kbd>Esc</kbd></span><span class="pd"><i class="gl o">○</i></span> Atrás</span>
+        <label class="esc-pick"><span>ESCENARIO</span><select id="escSel"></select></label>
         <button class="go" id="go"><span class="kb"><kbd>Enter</kbd></span><span class="pd"><i class="gl x">✕</i></span> PELEAR · 3 ROUNDS</button>
       </footer>
     </div>
@@ -228,7 +230,8 @@
       <button class="b td" data-k="td">DERRIBO<small>D</small></button>
       <button class="b mv" data-hold="left" aria-label="Caminar a la izquierda">◀<small>caminar</small></button>
       <button class="b mv" data-hold="down" aria-label="Agacharse">▼<small>agacharse</small></button>
-      <button class="b df" data-hold="block">CUBRIRSE<small>espacio</small></button>
+      <button class="b df" data-hold="block">GUARDIA ALTA<small>espacio</small></button>
+      <button class="b df" data-hold="check">GUARDIA BAJA<small>C</small></button>
       <button class="b mv" data-hold="right" aria-label="Caminar a la derecha">▶<small>caminar</small></button>
     </div>
     <div class="pad g3" id="padTop" hidden>
@@ -245,7 +248,8 @@
     <div class="vpad" id="vpad" aria-hidden="true">
       <div class="vstick" id="vstick"><div class="vknob" id="vknob"></div><span class="vlab">MOVERSE</span></div>
       <div class="vleft">
-        <button class="vb vi vhold" data-hold="block" data-ico="block"><i></i><small>CUBRIRSE</small></button>
+        <button class="vb vi vhold" data-hold="block" data-ico="block"><i></i><small>GUARDIA<br>ALTA</small></button>
+        <button class="vb vi vhold" data-hold="check" data-ico="check"><i></i><small>GUARDIA<br>BAJA</small></button>
         <button class="vb vi vhold" data-hold="duck" data-ico="duck"><i></i><small>ESQUIVAR</small></button>
       </div>
       <div class="vright">
@@ -265,6 +269,35 @@
 
 <div id="ov" hidden><div class="card" id="ovc"></div></div>
 <!-- En el celular se juega siempre acostado -->
+<div id="musPanel" class="mus-panel" aria-hidden="true"><div class="mp-card" role="dialog" aria-label="Reproductor de música">
+ <header class="mp-top"><b>♪ REPRODUCTOR</b><button class="mp-cerrar" id="mpCerrar" aria-label="Cerrar">✕</button></header>
+ <div class="mp-cuerpo">
+  <div class="mp-izq">
+   <div class="mp-now"><small>SONANDO EN LOS MENÚS</small><b id="mpNombre">—</b><span id="mpEstilo"></span></div>
+   <div class="mp-ctl"><button id="mpPrev" aria-label="Anterior">⏮</button><button id="mpPlay" class="mp-play" aria-label="Reproducir o pausar">▶</button><button id="mpNext" aria-label="Siguiente">⏭</button>
+    <label class="chk"><input type="checkbox" id="mpAzar" checked> Aleatorio</label></div>
+   <label class="mp-add">+ AGREGAR TU MÚSICA<input type="file" id="mpArchivo" accept="audio/*,.mp3,.m4a,.ogg,.wav" multiple hidden></label>
+   <div class="mp-spo"><b>SPOTIFY</b>
+    <div class="mp-row"><input id="mpSpoLink" type="url" inputmode="url" placeholder="Pegá el link de una playlist, álbum o tema"><button id="mpSpoUsar">USAR</button></div>
+    <div id="mpSpoBox"></div><small id="mpSpoMsg"></small><button class="mp-quitar" id="mpSpoQuitar" hidden>VOLVER A LA MÚSICA DEL JUEGO</button>
+    <small class="mp-nota">Si no iniciaste sesión de Spotify en este navegador, Spotify solo deja escuchar 30 segundos de cada tema.</small>
+   </div>
+  </div>
+  <div class="mp-lista" id="mpLista"></div>
+ </div>
+</div></div>
+<div id="presenta" class="presenta" hidden aria-label="Presentación de la pelea">
+ <div class="pr-e1"><div class="pr-bg"></div>
+  <canvas id="prFotA" class="pr-fot pr-a"></canvas><canvas id="prFotB" class="pr-fot pr-b"></canvas>
+  <div class="pr-mid"><div class="pr-badge" id="prBadge">ULTIMATE WARRIOR</div><div class="pr-lugar" id="prLugar"></div><div class="pr-div" id="prDiv"></div><div class="pr-tit" id="prTit"></div>
+   <div class="pr-noms"><div class="pr-nom n1"><span id="prNomA"></span><em>VS</em></div><div class="pr-nom n2" id="prNomB"></div></div>
+   <div class="pr-recs"><span id="prRecA"></span><span id="prRecB"></span></div><div class="pr-mus" id="prMus"></div></div>
+  <div class="pr-wipe"><span id="prBarA"></span></div>
+ </div>
+ <div class="pr-e2"><div class="pr-lineas"></div><div class="pr-big"><b id="prDivA"></b><i id="prDivB"></i><small id="prDivKg"></small></div></div>
+ <div class="pr-e3"><canvas id="prOct" width="320" height="144"></canvas><div class="pr-pie" id="prPie"></div></div>
+ <div class="pr-saltar">TOCÁ PARA SALTAR ▶▶</div>
+</div>
 <div id="cargaPelea" hidden><div class="cp-tip"><b>CONSEJO</b><span id="cpTip"></span></div></div>
 <div class="rothint" id="rotHint" hidden>
   <div class="rotph"></div>
@@ -273,28 +306,31 @@
 </div>
 
 <!-- El orden importa: cada archivo usa cosas de los anteriores -->
-<script src="js/config.js?v=19"></script>
-<script src="data/peleadores.js?v=19"></script>
-<script src="data/sprites.js?v=19"></script>
-<script src="data/cuerpo-base.js?v=19"></script>
-<script src="js/dibujo.js?v=19"></script>
-<script src="js/cuerpos.js?v=19"></script>
-<script src="js/sonido.js?v=19"></script>
-<script src="js/juego.js?v=19"></script>
-<script src="js/menu.js?v=19"></script>
-<script src="js/navegacion.js?v=19"></script>
-<script src="js/crear.js?v=19"></script>
-<script src="js/torneo.js?v=19"></script>
-<script src="js/carrera.js?v=19"></script>
-<script src="js/fichas.js?v=19"></script>
-<script src="js/mando.js?v=19"></script>
-<script src="js/iconos.js?v=19"></script>
-<script src="js/tactil.js?v=19"></script>
-<script src="js/nube-config.js?v=19"></script>
-<script src="js/nube.js?v=19"></script>
-<script src="js/app.js?v=19"></script>
-<script src="js/musica.js?v=19"></script>
-<script src="js/carga.js?v=19"></script>
-<script src="js/inicio.js?v=19"></script>
+<script src="js/config.js?v=26"></script>
+<script src="data/peleadores.js?v=26"></script>
+<script src="data/sprites.js?v=26"></script>
+<script src="data/cuerpo-base.js?v=26"></script>
+<script src="js/dibujo.js?v=26"></script>
+<script src="js/escenarios.js?v=26"></script>
+<script src="js/cuerpos.js?v=26"></script>
+<script src="js/sonido.js?v=26"></script>
+<script src="js/juego.js?v=26"></script>
+<script src="js/menu.js?v=26"></script>
+<script src="js/navegacion.js?v=26"></script>
+<script src="js/crear.js?v=26"></script>
+<script src="js/torneo.js?v=26"></script>
+<script src="js/promotoras.js?v=26"></script>
+<script src="js/carrera.js?v=26"></script>
+<script src="js/fichas.js?v=26"></script>
+<script src="js/mando.js?v=26"></script>
+<script src="js/iconos.js?v=26"></script>
+<script src="js/tactil.js?v=26"></script>
+<script src="js/nube-config.js?v=26"></script>
+<script src="js/nube.js?v=26"></script>
+<script src="js/app.js?v=26"></script>
+<script src="js/musica.js?v=26"></script>
+<script src="js/presenta.js?v=26"></script>
+<script src="js/carga.js?v=26"></script>
+<script src="js/inicio.js?v=26"></script>
 </body>
 </html>

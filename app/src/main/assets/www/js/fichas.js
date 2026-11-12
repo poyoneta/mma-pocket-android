@@ -1,6 +1,6 @@
 /* ---------------- Fichas de peleadores y pantalla de elección (estilo VS) ---------------- */
-const PAISES={ARG:'Argentina',BRA:'Brasil',URU:'Uruguay',CHI:'Chile',PAR:'Paraguay',BOL:'Bolivia',PER:'Perú',COL:'Colombia',VEN:'Venezuela',ECU:'Ecuador',MEX:'México',USA:'EE.UU.',CAN:'Canadá',ESP:'España',ITA:'Italia',FRA:'Francia',IRL:'Irlanda',ENG:'Inglaterra',POL:'Polonia',RUS:'Rusia',KAZ:'Kazajistán',TUR:'Turquía',NGA:'Nigeria',GHA:'Ghana',JPN:'Japón',CHN:'China',KOR:'Corea del Sur',AUS:'Australia',NZL:'Nueva Zelanda',GEO:'Georgia',CMR:'Camerún',BUL:'Bulgaria',MAR:'Marruecos'};
-const CIUDADES={ARG:['Buenos Aires','Córdoba','Rosario','Mar del Plata','La Plata','Mendoza','Tucumán'],BRA:['Río de Janeiro','São Paulo','Curitiba','Manaos','Salvador'],URU:['Montevideo','Salto'],CHI:['Santiago','Valparaíso'],MEX:['Ciudad de México','Tijuana','Guadalajara'],COL:['Medellín','Bogotá','Cali'],PER:['Lima','Arequipa'],PAR:['Asunción'],BOL:['La Paz'],VEN:['Caracas'],ECU:['Quito'],USA:['Las Vegas','Denver','Albuquerque','San Diego','Miami'],CAN:['Montreal','Toronto'],RUS:['Moscú','Grozni','Majachkalá'],JPN:['Tokio','Osaka'],NGA:['Lagos'],TUR:['Estambul'],POL:['Varsovia','Cracovia'],ITA:['Roma','Milán'],FRA:['París','Marsella'],ESP:['Madrid','Barcelona'],KAZ:['Almatý'],IRL:['Dublín'],GHA:['Acra'],ENG:['Londres','Liverpool','Manchester'],AUS:['Sídney','Perth'],GEO:['Tiflis'],KOR:['Seúl'],NZL:['Auckland'],CMR:['Duala'],BUL:['Sofía'],MAR:['Casablanca'],CHN:['Pekín']};
+const PAISES={ARE:'Emiratos Árabes',SAU:'Arabia Saudita',ARG:'Argentina',BRA:'Brasil',URU:'Uruguay',CHI:'Chile',PAR:'Paraguay',BOL:'Bolivia',PER:'Perú',COL:'Colombia',VEN:'Venezuela',ECU:'Ecuador',MEX:'México',USA:'EE.UU.',CAN:'Canadá',ESP:'España',ITA:'Italia',FRA:'Francia',IRL:'Irlanda',ENG:'Inglaterra',POL:'Polonia',RUS:'Rusia',KAZ:'Kazajistán',TUR:'Turquía',NGA:'Nigeria',GHA:'Ghana',JPN:'Japón',CHN:'China',KOR:'Corea del Sur',AUS:'Australia',NZL:'Nueva Zelanda',GEO:'Georgia',CMR:'Camerún',BUL:'Bulgaria',MAR:'Marruecos',MMR:'Myanmar',POR:'Portugal',IRQ:'Irak',UZB:'Uzbekistán',AZE:'Azerbaiyán',KGZ:'Kirguistán',ARM:'Armenia',UKR:'Ucrania',SRB:'Serbia',RSA:'Sudáfrica',GER:'Alemania',CZE:'Chequia',NED:'Países Bajos',LTU:'Lituania',DOM:'Rep. Dominicana',CRO:'Croacia',MDA:'Moldavia',PAN:'Panamá',SWE:'Suecia'};
+const CIUDADES={ARG:['Buenos Aires','Córdoba','Rosario','Mar del Plata','La Plata','Mendoza','Tucumán'],BRA:['Río de Janeiro','São Paulo','Curitiba','Manaos','Salvador'],URU:['Montevideo','Salto'],CHI:['Santiago','Valparaíso'],MEX:['Ciudad de México','Tijuana','Guadalajara'],COL:['Medellín','Bogotá','Cali'],PER:['Lima','Arequipa'],PAR:['Asunción'],BOL:['La Paz'],VEN:['Caracas'],ECU:['Quito'],USA:['Las Vegas','Denver','Albuquerque','San Diego','Miami'],CAN:['Montreal','Toronto'],RUS:['Moscú','Grozni','Majachkalá'],JPN:['Tokio','Osaka'],NGA:['Lagos'],TUR:['Estambul'],POL:['Varsovia','Cracovia'],ITA:['Roma','Milán'],FRA:['París','Marsella'],ESP:['Madrid','Barcelona'],KAZ:['Almatý'],IRL:['Dublín'],GHA:['Acra'],ENG:['Londres','Liverpool','Manchester'],AUS:['Sídney','Perth'],GEO:['Tiflis'],KOR:['Seúl'],NZL:['Auckland'],CMR:['Duala'],BUL:['Sofía'],MAR:['Casablanca'],CHN:['Pekín'],MMR:['Yangón','Mandalay'],POR:['Lisboa','Oporto'],IRQ:['Bagdad','Erbil'],UZB:['Taskent','Samarcanda'],AZE:['Bakú'],KGZ:['Biskek','Osh'],ARM:['Ereván','Gyumri'],UKR:['Kiev','Odesa','Járkov'],SRB:['Belgrado','Novi Sad'],RSA:['Pretoria','Ciudad del Cabo'],GER:['Berlín','Hamburgo'],CZE:['Praga','Brno'],NED:['Ámsterdam','Róterdam'],LTU:['Vilna','Kaunas'],DOM:['Santo Domingo'],CRO:['Zagreb','Split'],MDA:['Chisináu'],PAN:['Ciudad de Panamá','Colón'],SWE:['Estocolmo','Gotemburgo'],ARE:['Dubái','Abu Dabi']};
 const GIMNASIOS=['Las Vegas, EE.UU.','Albuquerque, EE.UU.','Coconut Creek, EE.UU.','Denver, EE.UU.','Río de Janeiro, Brasil','Buenos Aires, Argentina','Córdoba, Argentina','Londres, Inglaterra','Sídney, Australia','Ciudad de México, México','Majachkalá, Rusia','Montreal, Canadá'];
 
 function hashStr(s){let h=2166136261;for(const ch of s)h=Math.imul(h^ch.charCodeAt(0),16777619);return h>>>0;}
@@ -20,12 +20,12 @@ const ratings=f=>{const s=f.s;return[['GOLPE',(s.str+s.pow+s.spd)/3],['GRAPPLING
 const firstName=f=>(f.first||f.name.replace(new RegExp('\\s*'+f.last.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$'),'')).trim();
 
 /* ---------- Banderas (dibujos simples con los colores de cada país) ---------- */
-const FLAGS_H={ARG:['#74acdf','#fff','#74acdf'],RUS:['#fff','#0039a6','#d52b1e'],BUL:['#fff','#00966e','#d62612'],GHA:['#ce1126','#fcd116','#006b3f'],PAR:['#d52b1e','#fff','#0038a8'],BOL:['#d52b1e','#f9e300','#007934'],VEN:['#ffcc00','#00247d','#cf142b'],COL:['#fcd116','#fcd116','#003893','#ce1126'],ECU:['#ffdd00','#ffdd00','#034ea2','#ed1c24'],POL:['#fff','#dc143c'],ESP:['#aa151b','#f1bf00','#f1bf00','#aa151b'],KAZ:['#00afca']};
-const FLAGS_V={FRA:['#0055a4','#fff','#ef4135'],ITA:['#009246','#fff','#ce2b37'],IRL:['#169b62','#fff','#ff883e'],NGA:['#008751','#fff','#008751'],MEX:['#006847','#fff','#ce1126'],PER:['#d91023','#fff','#d91023'],CMR:['#007a5e','#ce1126','#fcd116'],CAN:['#d52b1e','#fff','#fff','#d52b1e']};
+const FLAGS_H={ARG:['#74acdf','#fff','#74acdf'],RUS:['#fff','#0039a6','#d52b1e'],BUL:['#fff','#00966e','#d62612'],GHA:['#ce1126','#fcd116','#006b3f'],PAR:['#d52b1e','#fff','#0038a8'],BOL:['#d52b1e','#f9e300','#007934'],VEN:['#ffcc00','#00247d','#cf142b'],COL:['#fcd116','#fcd116','#003893','#ce1126'],ECU:['#ffdd00','#ffdd00','#034ea2','#ed1c24'],POL:['#fff','#dc143c'],ESP:['#aa151b','#f1bf00','#f1bf00','#aa151b'],KAZ:['#00afca'],UZB:['#0099b5','#fff','#1eb53a'],AZE:['#00b5e2','#ef3340','#509e2f'],ARM:['#d90012','#0033a0','#f2a800'],UKR:['#0057b7','#ffd700'],SRB:['#c6363c','#0c4076','#fff'],GER:['#000','#dd0000','#ffce00'],NED:['#ae1c28','#fff','#21468b'],LTU:['#fdb913','#006a44','#c1272d'],CRO:['#ff0000','#fff','#171796'],IRQ:['#ce1126','#fff','#000'],MMR:['#fecb00','#34b233','#ea2839']};
+const FLAGS_V={FRA:['#0055a4','#fff','#ef4135'],ITA:['#009246','#fff','#ce2b37'],IRL:['#169b62','#fff','#ff883e'],NGA:['#008751','#fff','#008751'],MEX:['#006847','#fff','#ce1126'],PER:['#d91023','#fff','#d91023'],CMR:['#007a5e','#ce1126','#fcd116'],CAN:['#d52b1e','#fff','#fff','#d52b1e'],MDA:['#0046ae','#ffd200','#cc092f']};
 function drawFlag(g,code,w,h){
  g.clearRect(0,0,w,h);const F=(c,x,y,ww,hh)=>{g.fillStyle=c;g.fillRect(x,y,ww,hh);};
  const disc=(x,y,r,c)=>{g.fillStyle=c;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();};
- if(FLAGS_H[code]){const L=FLAGS_H[code];L.forEach((c,i)=>F(c,0,i*h/L.length,w,h/L.length+1));if(code==='ARG'||code==='KAZ')disc(w/2,h/2,h*.13,'#f6b40e');}
+ if(FLAGS_H[code]){const L=FLAGS_H[code];L.forEach((c,i)=>F(c,0,i*h/L.length,w,h/L.length+1));if(code==='ARG'||code==='KAZ')disc(w/2,h/2,h*.13,'#f6b40e');if(code==='MMR')disc(w/2,h/2,h*.18,'#fff');if(code==='IRQ')F('#007a3d',w*.3,h*.45,w*.4,Math.max(1,h*.1));if(code==='CRO')F('#c8102e',w*.42,h*.3,w*.16,h*.3);}
  else if(FLAGS_V[code]){const L=FLAGS_V[code];L.forEach((c,i)=>F(c,i*w/L.length,0,w/L.length+1,h));if(code==='CAN')F('#d52b1e',w*.42,h*.3,w*.16,h*.4);if(code==='CMR')disc(w/2,h/2,h*.1,'#fcd116');}
  else switch(code){
   case'BRA':F('#009c3b',0,0,w,h);g.fillStyle='#ffdf00';g.beginPath();g.moveTo(w/2,h*.1);g.lineTo(w*.92,h/2);g.lineTo(w/2,h*.9);g.lineTo(w*.08,h/2);g.fill();disc(w/2,h/2,h*.22,'#002776');break;
@@ -37,9 +37,18 @@ function drawFlag(g,code,w,h){
   case'TUR':F('#e30a17',0,0,w,h);disc(w*.4,h/2,h*.25,'#fff');disc(w*.45,h/2,h*.2,'#e30a17');break;
   case'CHN':F('#de2910',0,0,w,h);disc(w*.18,h*.28,h*.12,'#ffde00');break;
   case'MAR':F('#c1272d',0,0,w,h);disc(w/2,h/2,h*.14,'#006233');disc(w/2,h/2,h*.09,'#c1272d');break;
+  case'ARE':F('#00732f',0,0,w,h/3);F('#fff',0,h/3,w,h/3);F('#000',0,h*2/3,w,h/3+1);F('#ff0000',0,0,w*.27,h);break;
+  case'SAU':F('#006c35',0,0,w,h);F('#fff',w*.22,h*.62,w*.56,Math.max(1,h*.08));F('#fff',w*.25,h*.3,w*.5,Math.max(1,h*.06));break;
   case'ENG':F('#fff',0,0,w,h);F('#ce1124',w*.44,0,w*.12,h);F('#ce1124',0,h*.4,w,h*.2);break;
   case'GEO':F('#fff',0,0,w,h);F('#ff0000',w*.44,0,w*.12,h);F('#ff0000',0,h*.4,w,h*.2);break;
   case'AUS':case'NZL':F('#012169',0,0,w,h);F('#fff',0,h*.2,w*.5,h*.1);F('#fff',w*.2,0,w*.1,h*.5);F('#c8102e',0,h*.22,w*.5,h*.06);F('#c8102e',w*.22,0,w*.06,h*.5);disc(w*.75,h*.65,h*.07,code==='NZL'?'#c8102e':'#fff');disc(w*.82,h*.3,h*.05,code==='NZL'?'#c8102e':'#fff');break;
+  case'POR':F('#006600',0,0,w*.4,h);F('#ff0000',w*.4,0,w*.6,h);disc(w*.4,h/2,h*.2,'#ffcc00');break;
+  case'KGZ':F('#e8112d',0,0,w,h);disc(w/2,h/2,h*.25,'#ffef00');disc(w/2,h/2,h*.13,'#e8112d');break;
+  case'CZE':F('#fff',0,0,w,h/2);F('#d7141a',0,h/2,w,h/2);g.fillStyle='#11457e';g.beginPath();g.moveTo(0,0);g.lineTo(w*.5,h/2);g.lineTo(0,h);g.fill();break;
+  case'RSA':F('#e03c31',0,0,w,h/2);F('#001489',0,h/2,w,h/2);F('#fff',0,h*.33,w,h*.34);F('#007749',0,h*.4,w,h*.2);g.fillStyle='#000';g.beginPath();g.moveTo(0,h*.15);g.lineTo(w*.35,h/2);g.lineTo(0,h*.85);g.fill();break;
+  case'DOM':F('#002d62',0,0,w/2,h/2);F('#ce1126',w/2,0,w/2,h/2);F('#ce1126',0,h/2,w/2,h/2);F('#002d62',w/2,h/2,w/2,h/2);F('#fff',w*.45,0,w*.1,h);F('#fff',0,h*.42,w,h*.16);break;
+  case'PAN':F('#fff',0,0,w,h);F('#da121a',w/2,0,w/2,h/2);F('#005293',0,h/2,w/2,h/2);disc(w*.25,h*.25,h*.08,'#005293');disc(w*.75,h*.75,h*.08,'#da121a');break;
+  case'SWE':F('#006aa7',0,0,w,h);F('#fecc00',w*.3,0,w*.14,h);F('#fecc00',0,h*.42,w,h*.16);break;
   default:F('#8a8f99',0,0,w,h);F('#6f747e',0,h*.5,w,h*.5);
  }
 }
@@ -85,7 +94,15 @@ function cycle(side,d){
 }
 $('#pPrev').onclick=()=>cycle('p',-1);$('#pNext').onclick=()=>cycle('p',1);$('#rPrev').onclick=()=>cycle('r',-1);$('#rNext').onclick=()=>cycle('r',1);
 $('#tabPrev').onclick=()=>setVsTab(vsTab-1);$('#tabNext').onclick=()=>setVsTab(vsTab+1);
-$('#go').onclick=()=>startFight(selP,selR,{kind:'quick',rounds:3});
+// Escenario de la pelea rápida: el que quieras, o al azar
+(function(){
+ const sel=$('#escSel');if(!sel)return;const grp={elite:'Sedes grandes',pro:'Ciudades',regional:'Liga regional',calle:'Callejeras'};
+ sel.innerHTML='<option value="">Al azar</option>'+Object.keys(grp).map(n=>`<optgroup label="${grp[n]}">${ESCENARIOS.filter(e=>e.nivel===n).map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}</optgroup>`).join('');
+ try{sel.value=localStorage.getItem('pmma-esc')||'';}catch(e){}
+ sel.onchange=()=>{try{localStorage.setItem('pmma-esc',sel.value);}catch(e){}};
+})();
+function escQuick(){const v=$('#escSel')&&$('#escSel').value;return v||ESCENARIOS[Math.floor(Math.random()*ESCENARIOS.length)].id;}
+$('#go').onclick=()=>startFight(selP,selR,{kind:'quick',rounds:3,esc:escQuick()});
 // Teclado en la pantalla de elección
 document.addEventListener('keydown',e=>{
  if(curScreen!=='quick'||!$('#ov').hidden||G)return;

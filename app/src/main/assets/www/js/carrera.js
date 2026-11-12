@@ -45,16 +45,9 @@ const RETOS=[
 ];
 // Gimnasios (mejoran los puntos que da entrenar y bajan el riesgo de lesión)
 const GYMS=[['Gimnasio del barrio',0,1],['Academia regional',150000,1.25],['Centro de alto rendimiento',600000,1.5],['Equipo de élite',2000000,1.8]];
-// Patrocinadores (marcas inventadas): se desbloquean con fans; pagan por pelea y un bono si cumplís la condición
-const SPONS=[
- {id:'voltio',n:'Voltio · bebida energética',fans:4000,pago:15000,cond:'ganar',bono:20000},
- {id:'kraken',n:'Kraken · ropa deportiva',fans:20000,pago:40000,cond:'fin',bono:60000},
- {id:'titan',n:'Titán · suplementos',fans:80000,pago:90000,cond:'ganar',bono:90000},
- {id:'cronos',n:'Cronos · relojes',fans:250000,pago:200000,cond:'titulo',bono:300000},
- {id:'vertice',n:'Vértice · autos',fans:1000000,pago:450000,cond:'fin',bono:500000}];
 const CONDS={ganar:'si ganás',fin:'si ganás por KO o sumisión',titulo:'en peleas por el título'};
 const edadDe=()=>Math.floor((C.ageBase||24)+(C.date-(C.start||C.date))/(365*864e5));
-const regional=()=>C.liga==='regional';
+const regional=()=>(C.org||'uw')!=='uw';   // fuera de UW no hay ranking
 const REG_WINS=3;   // victorias en la liga regional para conseguir contrato
 // Legado: puntaje de toda la carrera
 function legado(){const fins=C.hist.filter(h=>h.res==='p'&&!/Decisión/.test(h.method)).length;
@@ -73,13 +66,14 @@ function divOpp(rank){
  if(f){const o=JSON.parse(JSON.stringify(f));o.rank=rank;return o;}
  return genOpp(rank);
 }
-const purse=(o,title)=>o.regional?Math.round((6+ (o.nivel||55)/6)*1000):Math.round((o.rival?1.5:1)*((title?260:0)+12*(17-Math.min(16,o.rank===0?0:o.rank))+20)*1000*(C.contract?C.contract.mult:1)*(1+C.hype/200));
+const purse=(o,title)=>o.regional?Math.round((PROMOS[o.org||C.org]||PROMOS.ffc).bolsa?(PROMOS[o.org||C.org]||PROMOS.ffc).bolsa(o.nivel||55)*(o.orgTitle?2.5:1):1000):Math.round((o.rival?1.5:1)*((title?260:0)+12*(17-Math.min(16,o.rank===0?0:o.rank))+20)*1000*(C.contract?C.contract.mult:1)*(1+C.hype/200));
 function makeOffers(){
  let list;
  if(regional()){
-  // liga regional: rivales flojos, bolsas chicas; con 3 victorias te contratan
-  const base=50+C.rec.w*3;
-  return[0,1,2].map(i=>{const f=genOpp(16,base+i*3);f.rank=16;f.regional=true;f.nivel=base+i*3;return{f,title:false,weeks:[2,3,3][i]};});
+  // promotoras chicas: rivales del nivel de la promotora, bolsas chicas; la quinta de ZENIT o PCL puede ser por su cinturón
+  const P=promo(),R=C.orgRec||{n:0,w:0},base=[46,55,64][P.tier]+R.n*2;
+  if(P.tier===2&&R.n===4&&R.w>=3){const f=genOpp(16,base+6);f.rank=16;f.regional=true;f.nivel=base+6;f.org=P.id;f.orgTitle=true;return[{f,title:false,weeks:6,orgTitle:true}];}
+  return[0,1,2].map(i=>{const f=genOpp(16,base+i*3);f.rank=16;f.regional=true;f.nivel=base+i*3;f.org=P.id;return{f,title:false,weeks:[2,3,4][i]};});
  }
  if(C.champ)list=[1,2,3].map(r=>({f:divOpp(r),title:true}));
  else if(C.rank===1)list=[{f:divOpp(0),title:true}];
@@ -95,9 +89,11 @@ function post(quien,arroba,tipo,texto,extra){C.feed.unshift({quien,arroba,tipo,t
 function migrar(){
  if(!C)return;
  const d={date:Date.now(),fans:1200,hype:15,ep:0,money:0,streak:0,titles:C.champ?1:0,feed:[],best:C.rank,fitness:55,longevity:100,injury:0,
-  contract:{total:4,left:4,mult:1,bonoFin:50000,fins:0},gym:0,spons:[],rivals:{},belts:C.champ?[C.div]:[],liga:'pro',ageBase:(C.f.bio&&C.f.bio.edad)||26,start:C.date||Date.now()};
+  contract:{total:4,left:4,mult:1,bonoFin:50000,fins:0},gym:0,spons:[],rivals:{},belts:C.champ?[C.div]:[],liga:'pro',org:null,orgRec:{n:0,w:0,l:0,d:0},r1ko:0,coach:'tito',amistad:{tito:10},llamadas:null,ageBase:(C.f.bio&&C.f.bio.edad)||26,start:C.date||Date.now()};
  for(const k in d)if(C[k]==null)C[k]=d[k];
  if(C.pop!=null&&C.hype===15)C.hype=C.pop;
+ if(!C.org)C.org=C.liga==='regional'?'amateur':'uw';
+ C.spons=(C.spons||[]).filter(id=>SPONS.some(S=>S.id===id));
  if(C.step==='camp'&&!C.camp)C.step='offers';
  if(C.step==='fight'&&!C.camp)C.camp={weeks:1,week:2,time:0,studied:false,reto:null,log:[]};
  if(!C.offers)C.offers=makeOffers();
@@ -109,9 +105,11 @@ function startCareer(f,div){
  d.div=div;
  C={div,f:d,rec:{w:0,l:0,d:0},rank:16,best:16,champ:false,defenses:0,titles:0,hist:[],step:'offers',offers:null,opp:null,title:false,camp:null,
   date:Date.now(),start:Date.now(),ageBase:(d.bio&&d.bio.edad)||22,fans:800,hype:10,ep:0,money:0,streak:0,feed:[],fitness:55,longevity:100,injury:0,
-  contract:{total:4,left:4,mult:1,bonoFin:50000,fins:0},gym:0,spons:[],rivals:{},belts:[],liga:'regional',last:`Empezás en la liga regional: ganá ${REG_WINS} peleas para que Pocket MMA te contrate.`};
+  contract:{total:4,left:4,mult:1,bonoFin:50000,fins:0},gym:0,spons:[],rivals:{},belts:[],liga:'regional',org:'amateur',orgRec:{n:0,w:0,l:0,d:0},r1ko:0,coach:'tito',amistad:{tito:10},llamadas:null,orgBelts:[],
+  last:`Arrancás como amateur: 5 peleas en el Circuito Amateur. Si te va bien te llama una promotora. Ganá por KO en el primer round y te llaman antes.`};
  C.offers=makeOffers();
- post('Liga Regional','@ligaregional','org',`Debut en la liga regional: ${handle(d)} (${divName(div).toLowerCase()}). Los ojeadores de Pocket MMA miran cada pelea.`);
+ post('Circuito Amateur','@circuitoamateur','org',`Debut amateur: ${handle(d)} (${divName(div).toLowerCase()}). Los ojeadores de las promotoras miran cada pelea.`);
+ post('Tito Ferreyra','@elviejotito','coach',`Este pibe tiene algo. Lo vamos a llevar de a poco. 🥊`);
  post(d.name,handle(d),'yo',`Arranca todo. Desde abajo, como tiene que ser. 🥊`);
  saveC();kTab='inicio';renderCareer();
 }
@@ -122,23 +120,24 @@ function aceptarOferta(i){
  const reto=pick(RETOS);
  C.camp={weeks:o.weeks,week:1,time:TIEMPO,studied:false,reto:{id:reto[0],txt:reto[1],acc:null},log:[],trash:0};
  C.fightDate=C.date+o.weeks*7*864e5;
- post(...CUENTAS[0].slice(0,2),'org',`¡Pelea confirmada! ${handle(C.f)} vs ${handle(o.f)}${o.title?' por el cinturón':''} en ${o.weeks} semanas.`);
+ post(...orgCta(),'org',`¡Pelea confirmada! ${handle(C.f)} vs ${handle(o.f)}${o.title?' por el cinturón':''} en ${o.weeks} semanas.`);
  post(o.f.name,handle(o.f),'rival',pick([`Respeto a ${C.f.last}, pero no está listo para esto.`,`Que entrene bien. Lo voy a necesitar entero para ganarle.`,`Otro que viene a buscar fama a mi costa.`]));
  post(...CUENTAS[3].slice(0,2),'reto',`${handle(C.f)} si querés que te sigamos: ${reto[1].toLowerCase()} 🔥`,{reto:1});
- kLog=[];saveC();kTab='semana';renderCareer();
+ kLog=[];const cj=consejoCamp();if(cj){C.camp.consejo=cj;kLog.unshift(cj.txt);if(cj.revela){C.camp.studied=true;kLog.unshift(`${coach().n} ya estudió al rival: tenés sus números.`);}post(coach().n,'@'+coach().id+'coach','coach',cj.txt.replace(/^[^:]+: /,''));}
+ kLog=kLog.slice(0,8);saveC();kTab='semana';renderCareer();
 }
 function gastar(c){if(C.camp.time<c){kLog.unshift('No te alcanza el tiempo esta semana.');return false;}C.camp.time-=c;return true;}
-function ganaEP(n){n=Math.round(n*GYMS[C.gym||0][2]);C.ep+=n;return`+${n} puntos de evolución`;}
+function ganaEP(n,ent){const K=coach(),bono=ent!=null&&(K.ent===-1||K.ent===ent)?.12*K.prest:.04*K.prest;n=Math.round(n*GYMS[C.gym||0][2]*(1+bono));C.ep+=n;return`+${n} puntos de evolución`;}
 function subeForma(n){
  const antes=C.fitness;C.fitness=clamp(C.fitness+n,0,110);let t=`Forma ${antes}→${Math.min(100,C.fitness)}`;
- if(C.fitness>100&&rnd()<.35-(C.gym||0)*.07){C.injury=2;t+='. ¡Te pasaste y te lesionaste! Descansá para curarte.';}
+ if(C.fitness>100&&rnd()<.35-(C.gym||0)*.07-amistad()/400){C.injury=2;t+='. ¡Te pasaste y te lesionaste! Descansá para curarte.';}
  C.fitness=Math.min(100,C.fitness);return t;
 }
 function accion(k,arg){
  const A=ACCIONES[k];if(!A||!C.camp||C.step!=='camp')return;
  if(k==='entrenar'){
   if(!gastar(A.c))return;const E=ENTRENOS[arg];const g={};g[pick(E[2])]=1;const up=rnd()<.35?applyGain(C.f.s,g):[];
-  kLog.unshift(`Entrenamiento de ${E[0].toLowerCase()}: ${subeForma(C.injury?5:12)}, ${ganaEP(C.injury?8:18)}${up.length?', '+up.join(', '):''}.`);
+  kLog.unshift(`Entrenamiento de ${E[0].toLowerCase()}: ${subeForma(C.injury?5:12)}, ${ganaEP(C.injury?8:18,+arg)}${C.camp.consejo&&C.camp.consejo.ent===+arg?' (lo que pidió tu entrenador)':''}${up.length?', '+up.join(', '):''}.`);
  }else if(k==='sparring'){
   if(arg==='jugar'){if(C.camp.time<A.c){kLog.unshift('No te alcanza el tiempo esta semana.');renderCareer();return;}jugarSparring();return;}
   if(!gastar(A.c))return;kLog.unshift(`Sparring simulado: ${subeForma(9)}, ${ganaEP(20)}.`);
@@ -169,7 +168,7 @@ function accion(k,arg){
 }
 function terminarSemana(){
  if(C.step!=='camp')return;
- C.fitness=Math.max(0,C.fitness-(C.camp.time>=6?8:4));C.date+=7*864e5;
+ C.fitness=Math.max(0,C.fitness-(C.camp.time>=6?8:4));C.date+=7*864e5;sumaAmistad(3);
  if(C.injury)C.injury=Math.max(0,C.injury-1);
  C.hype=Math.max(0,C.hype-1);
  if(C.camp.week>=C.camp.weeks){C.step='fight';kLog.unshift('Terminó el campamento. ¡Llegó la noche de pelea!');
@@ -191,7 +190,7 @@ function simularSemana(){
 }
 function jugarSparring(){
  const p=JSON.parse(JSON.stringify(C.f)),r=genOpp(Math.max(1,Math.min(16,(C.rank>=16?14:C.rank)+2)));r.name='Compañero de sparring';r.last='Sparring';
- startFight(p,r,{kind:'career',rounds:1,title:`SPARRING · SEMANA ${C.camp.week}`,onDone(res){
+ startFight(p,r,{kind:'career',esc:'gimnasio',rounds:1,title:`SPARRING · SEMANA ${C.camp.week}`,onDone(res){
   C.camp.time-=ACCIONES.sparring.c;
   const ep=res.w==='p'?55:res.w==='d'?40:30;C.ep+=ep;const t=subeForma(10);
   if(res.w==='r'&&/KO/.test(res.method)&&rnd()<.4){C.injury=1;}
@@ -227,24 +226,40 @@ function pesaje(tipo){
 }
 function careerFight(){
  const n=C.rec.w+C.rec.l+C.rec.d+1;
- startFight(peleadorParaPelea(),rivalParaPelea(),{kind:'career',rounds:C.title?5:3,title:C.title?(C.champ?'DEFENSA DEL TÍTULO':'PELEA POR EL TÍTULO'):regional()?`LIGA REGIONAL · PELEA ${n}`:C.opp.rival?'REVANCHA':`CARRERA · PELEA ${n}`,onDone(res){applyResult(res);kTab='inicio';showScreen('career');}});
+ const sede=escenarioCarrera(),ot=C.opp&&C.opp.orgTitle;startFight(peleadorParaPelea(),rivalParaPelea(),{kind:'career',esc:sede&&sede.id,walkout:C.walkout,org:promo().n,rounds:C.title||ot?5:3,title:C.title?(C.champ?'DEFENSA DEL TÍTULO':'PELEA POR EL TÍTULO'):ot?`TÍTULO ${promo().corto}`:regional()?`${promo().corto} · PELEA ${(C.orgRec&&C.orgRec.n||0)+1} DE ${promo().peleas}`:C.opp.rival?'REVANCHA':`CARRERA · PELEA ${n}`,onDone(res){applyResult(res);kTab='inicio';showScreen('career');}});
 }
 function careerSim(){
  const p=peleadorParaPelea(),r=simFight(p,rivalParaPelea());
- applyResult({w:r.w===p?'p':'r',method:r.method,round:/Decisión/.test(r.method)?(C.title?5:3):1+Math.floor(rnd()*(C.title?5:3))});
+ applyResult({w:r.w===p?'p':'r',method:r.method,round:/Decisión/.test(r.method)?(C.title||(C.opp&&C.opp.orgTitle)?5:3):1+Math.floor(rnd()*(C.title?5:3))});
  kTab='inicio';renderCareer();
 }
 function applyResult(res){
  const opp=C.opp,wasChamp=C.champ,n=C.rec.w+C.rec.l+C.rec.d+1,bolsa=purse(opp,C.title);let txt,cobro=bolsa;
  const fin=res.w==='p'&&!/Decisión/.test(res.method);
  if(regional()){
-  // liga regional: no hay ranking ni contrato; con REG_WINS victorias te contrata Pocket MMA
-  if(res.w==='p'){C.rec.w++;C.streak=Math.max(1,C.streak+1);cobro=bolsa*2;C.hype=clamp(C.hype+4,0,100);txt=`Ganaste en la liga regional por ${res.method.toLowerCase()}.`;C.ep+=70;}
-  else if(res.w==='r'){C.rec.l++;C.streak=Math.min(-1,C.streak-1);txt=`Perdiste en la liga regional.`;C.ep+=30;}else{C.rec.d++;txt='Empate en la liga regional.';C.ep+=40;}
-  C.fans+=Math.round(res.w==='p'?C.fans*.2+300:80);C.money+=cobro;
-  C.hist.unshift({n,opp:opp.name,orank:'Regional',res:res.w,method:res.method,round:res.round,title:false,f:C.date,bolsa:cobro});
-  if(C.rec.w>=REG_WINS){C.liga='pro';C.rank=16;C.hype=clamp(C.hype+10,0,100);txt+=` ¡POCKET MMA TE OFRECE CONTRATO! Firmás por ${C.contract.total} peleas en la ${divName(C.div).toLowerCase()}.`;
-   post(...CUENTAS[0].slice(0,2),'org',`Nuevo fichaje: ${handle(C.f)} llega desde la liga regional con récord ${C.rec.w}-${C.rec.l}-${C.rec.d}. ¡Bienvenido a la ${divName(C.div).toLowerCase()}!`);}
+  // promotoras chicas: no hay ranking; se cuentan las peleas en la promotora y la racha de KO en el primer round
+  const P=promo(),R=C.orgRec=C.orgRec||{n:0,w:0,l:0,d:0},ko1=res.w==='p'&&/KO/.test(res.method)&&res.round===1;
+  R.n++;C.r1ko=ko1?(C.r1ko||0)+1:0;
+  if(res.w==='p'){C.rec.w++;R.w++;C.streak=Math.max(1,C.streak+1);cobro=bolsa*2;C.hype=clamp(C.hype+(ko1?7:4),0,100);txt=`Ganaste en ${P.corto} por ${res.method.toLowerCase()}${ko1?' en el primer round':''}.`;C.ep+=70;sumaAmistad(6);}
+  else if(res.w==='r'){C.rec.l++;R.l++;C.streak=Math.min(-1,C.streak-1);txt=`Perdiste en ${P.corto}.`;C.ep+=30;sumaAmistad(2);}else{C.rec.d++;R.d++;txt=`Empate en ${P.corto}.`;C.ep+=40;}
+  if(opp.orgTitle&&res.w==='p'){C.orgBelts=C.orgBelts||[];C.orgBelts.push(P.corto);txt+=` ¡CAMPEÓN DE ${P.corto}!`;post(...orgCta(),'org',`🏆 ${handle(C.f)} es el nuevo campeón de ${P.n}.`);}
+  // entrenador y patrocinadores
+  const fee=Math.round(cobro*coach().costo);if(fee){cobro-=fee;txt+=` ${coach().n.split(' ')[0]} cobra ${fmtMoney(fee)}.`;}
+  let sp=0;for(const id of C.spons||[]){const S=SPONS.find(x=>x.id===id);if(!S)continue;sp+=S.pago;if((S.cond==='ganar'&&res.w==='p')||(S.cond==='fin'&&res.w==='p'&&!/Decisión/.test(res.method)))sp+=S.bono;}
+  if(sp){cobro+=sp;txt+=` Patrocinadores: ${fmtMoney(sp)}.`;}
+  C.fans+=Math.round(res.w==='p'?C.fans*.2+300*(P.tier+1):80);C.money+=cobro;
+  C.longevity=Math.max(0,C.longevity-Math.round((res.w==='r'?(/KO/.test(res.method)?10:6):3)*factorDesgaste()));
+  C.hist.unshift({n,opp:opp.name,orank:P.corto+(opp.orgTitle?' · título':''),res:res.w,method:res.method,round:res.round,title:false,f:C.date,bolsa:cobro});C.hist=C.hist.slice(0,40);
+  // ¿te llama otra promotora?
+  let lla=null;
+  if(C.r1ko>=3&&P.tier<3)lla=['uw'];
+  else if(C.r1ko>=2&&P.tier<2)lla=ESCALERA[P.tier+1];
+  else if(opp.orgTitle&&res.w==='p')lla=['uw'];
+  else if(R.n>=P.peleas&&R.w>=4)lla=ESCALERA[P.tier+1];
+  else if(P.tier>0&&R.l>=3&&R.l>R.w){lla=ESCALERA[P.tier-1];txt+=` ${P.corto} no te renueva: volvés a bajar.`;}
+  else if(R.n>=P.peleas){C.orgRec={n:0,w:0,l:0,d:0};txt+=` ${P.corto} te renueva por 5 peleas más: con 4 victorias te llama la siguiente.`;}
+  if(lla&&lla[0]!==P.id){C.llamadas=lla;const rap=C.r1ko>=2?` ¡${C.r1ko} KO seguidos en el primer round!`:'';
+   txt+=lla[0]==='uw'?` 📞 ¡TE LLAMA ULTIMATE WARRIOR!${rap}`:` 📞 Te llama${lla.length>1?'n':''} ${lla.map(x=>PROMOS[x].n).join(' y ')}.${rap}`;}
   C.date=Math.max(C.date,C.fightDate||C.date)+10*864e5;C.fitness=Math.max(30,C.fitness-25);
   C.last=txt;C.step='offers';C.opp=null;C.title=false;C.camp=null;C.offers=makeOffers();saveC();return;
  }
@@ -254,7 +269,7 @@ function applyResult(res){
   if(wasChamp){C.defenses++;txt=`¡Retuviste el título ante ${opp.last}!`;}
   else if(opp.rank===0){C.champ=true;C.rank=0;C.titles++;C.belts=C.belts||[];if(!C.belts.includes(C.div))C.belts.push(C.div);
    txt=C.belts.length>=2?`¡${C.f.last.toUpperCase()} ES CAMPEÓN EN DOS DIVISIONES!`:`¡${C.f.last.toUpperCase()} ES EL NUEVO CAMPEÓN!`;
-   if(C.belts.length>=2)post(...CUENTAS[0].slice(0,2),'org',`🏆🏆 HISTÓRICO: ${handle(C.f)} es DOBLE CAMPEÓN (${C.belts.map(divName).join(' y ').toLowerCase()}).`);}
+   if(C.belts.length>=2)post(...orgCta(),'org',`🏆🏆 HISTÓRICO: ${handle(C.f)} es DOBLE CAMPEÓN (${C.belts.map(divName).join(' y ').toLowerCase()}).`);}
   else{C.rank=opp.rank<C.rank?opp.rank:Math.max(1,C.rank-1);txt=`Le ganaste a ${opp.last} por ${res.method.toLowerCase()}.`;}
   C.ep+=100+(fin?50:0);
  }else if(res.w==='r'){
@@ -280,10 +295,13 @@ function applyResult(res){
  const reto=C.camp&&C.camp.reto;
  if(reto&&reto.acc){const R=RETOS.find(x=>x[0]===reto.id);if(R&&R[2](res)){C.hype=clamp(C.hype+10,0,100);C.fans+=Math.round(C.fans*.15);txt+=' ¡Cumpliste el reto de los fans!';}else{C.hype=Math.max(0,C.hype-4);txt+=' No cumpliste el reto de los fans.';}}
  C.fans+=Math.round((res.w==='p'?C.fans*.12:C.fans*.02)+C.hype*400);
- C.longevity=Math.max(0,C.longevity-(res.w==='r'?(/KO/.test(res.method)?14:8):/Decisión/.test(res.method)?5:3));
+ C.longevity=Math.max(0,C.longevity-Math.round((res.w==='r'?(/KO/.test(res.method)?14:8):/Decisión/.test(res.method)?5:3)*factorDesgaste()));
+ sumaAmistad(res.w==='p'?6:2);
+ const fee=Math.round(cobro*coach().costo);if(fee){cobro-=fee;txt+=` ${coach().n.split(' ')[0]} cobra ${fmtMoney(fee)}.`;}
+ if(C.streak<=-3&&C.rank>=16&&!C.champ){C.llamadas=['zenit','pcl'];txt+=' Ultimate Warrior te corta el contrato. Te quieren en ZENIT y PCL para volver a armarte.';}
  C.money+=cobro;C.best=Math.min(C.best,C.rank);
  C.hist.unshift({n,opp:opp.name,orank:oppRank(opp),res:res.w,method:res.method,round:res.round,title:C.title,f:C.date,bolsa:cobro});C.hist=C.hist.slice(0,40);
- post(...CUENTAS[0].slice(0,2),'org',res.w==='p'?`¡${handle(C.f)} gana por ${res.method.toLowerCase()}${res.round&&!/Decisión/.test(res.method)?' en el round '+res.round:''}!${C.champ&&!wasChamp?' 🏆 NUEVO CAMPEÓN':''}`:res.w==='r'?`${handle(opp)} vence a ${handle(C.f)} por ${res.method.toLowerCase()}.`:`Empate entre ${handle(C.f)} y ${handle(opp)}.`);
+ post(...orgCta(),'org',res.w==='p'?`¡${handle(C.f)} gana por ${res.method.toLowerCase()}${res.round&&!/Decisión/.test(res.method)?' en el round '+res.round:''}!${C.champ&&!wasChamp?' 🏆 NUEVO CAMPEÓN':''}`:res.w==='r'?`${handle(opp)} vence a ${handle(C.f)} por ${res.method.toLowerCase()}.`:`Empate entre ${handle(C.f)} y ${handle(opp)}.`);
  if(fin)post(...CUENTAS[1].slice(0,2),'pro',`Qué finalización de ${C.f.last}. Hay que empezar a tomarlo en serio.`);
  // contrato
  C.contract.left--;
@@ -332,18 +350,26 @@ function crHud(){
   </div>
   <div class="cr6-r">${o?`<div class="cr6-vs">${retrato('kHudP')}<div><small>${(C.title?(C.champ?'DEFENSA':'TÍTULO'):'PRÓXIMA PELEA')}</small><b>${esc(C.f.last)}</b><b>vs ${esc(o.last)}</b></div>${retrato('kHudR')}</div>`:`<div class="cr6-vs empty"><small>PRÓXIMA PELEA</small><b>Elegí rival</b></div>`}</div>
  </header>
- <nav class="cr6-tabs">${[['inicio','INICIO'],['semana','SEMANA'],['micarrera','MI CARRERA'+(SPONS.some(S=>C.fans>=S.fans&&!(C.spons||[]).includes(S.id)&&(C.spons||[]).length<2)?' ●':'')],['evolucion','EVOLUCIÓN'+(C.ep>=20?' ●':'')],['ranking','RANKING'],['historial','HISTORIAL']].map(([k,l])=>`<button data-tab="${k}" class="${kTab===k?'on':''}">${l}</button>`).join('')}</nav>`;
+ <nav class="cr6-tabs">${[['inicio','INICIO'],['semana','SEMANA'],['micarrera','MI CARRERA'],['equipo','EQUIPO'+(SPONS.some(S=>C.fans>=S.fans&&tierDe()>=S.org&&!(C.spons||[]).includes(S.id)&&(C.spons||[]).length<cuposSpons())?' ●':'')],['evolucion','EVOLUCIÓN'+(C.ep>=20?' ●':'')],['ranking','RANKING'],['historial','HISTORIAL']].map(([k,l])=>`<button data-tab="${k}" class="${kTab===k?'on':''}">${l}</button>`).join('')}</nav>`;
+}
+function tilePromo(){
+ const P=promo(),R=C.orgRec||{n:0,w:0,l:0},esc0=ESCALERA.map(g=>g.map(id=>`<span class="${id===P.id?'on':''}">${PROMOS[id].corto}</span>`).join('<small>o</small>')).join('<i>›</i>');
+ return`<section class="cr6-tile cr6-promo"><h3>TU PROMOTORA</h3><div class="cr6-pm">${logoPromo(P.id,1)}<div><b>${P.n}</b><small>${P.desc}</small></div></div>
+  <div class="cr6-ladder">${esc0}</div>
+  <ul><li><span>Peleas en ${P.corto}</span><b>${R.n}/${P.peleas}</b></li><li><span>Récord en ${P.corto}</span><b>${R.w}-${R.l}-${R.d||0}</b></li><li><span>KO seguidos en el 1.er round</span><b>${C.r1ko||0} ${C.r1ko>=1?'🔥':''}</b></li></ul>
+  <p class="cr6-note">4 victorias en 5 peleas = te llama la siguiente. 2 KO seguidos en el 1.er round te adelantan; 3 seguidos y te llama UW.</p></section>`;
 }
 function tileContrato(){
+ if(regional())return tilePromo();
  const k=C.contract;
- return`<section class="cr6-tile cr6-contract"><h3>BONOS DEL CONTRATO</h3>
+ return`<section class="cr6-tile cr6-contract"><h3>${logoPromo('uw')} CONTRATO CON ULTIMATE WARRIOR</h3>
   <div class="cr6-pen"></div>
   <ul><li><span>Peleas que quedan</span><b>${k.left}/${k.total}</b></li><li><span>Bolsa base</span><b>×${k.mult.toFixed(2).replace('.',',')}</b></li><li><span>Bono por finalización</span><b>${fmtMoney(k.bonoFin)}</b></li></ul>
   <div class="cr6-foot"><span>Finalizaciones este contrato</span><b>${k.fins}/${k.total}</b></div><i class="cr6-prog"><u style="width:${k.fins/k.total*100}%"></u></i></section>`;
 }
 function tileRedes(n){
  const r=C.camp&&C.camp.reto;
- const items=C.feed.slice(0,n).map(p=>`<div class="cr6-post ${p.tipo}"><i class="cr6-pav ${p.tipo}">${p.tipo==='org'?'PMA':p.quien.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</i><div><b>${esc(p.quien)}</b> <small>${esc(p.arroba)}</small><p>${esc(p.texto)}</p>
+ const items=C.feed.slice(0,n).map(p=>`<div class="cr6-post ${p.tipo}"><i class="cr6-pav ${p.tipo}">${p.tipo==='org'?(p.quien==='Ultimate Warrior'?'UW':p.quien.split(' ').map(w=>w[0]).join('').slice(0,3).toUpperCase()):p.quien.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</i><div><b>${esc(p.quien)}</b> <small>${esc(p.arroba)}</small><p>${esc(p.texto)}</p>
   ${p.reto&&r&&r.acc==null?`<div class="cr6-reto"><button data-reto="1">Aceptar reto</button><button data-reto="0">Rechazar</button></div>`:p.reto&&r?`<em>${r.acc?'Reto aceptado':'Rechazaste el reto'}</em>`:''}</div></div>`).join('');
  return`<section class="cr6-tile cr6-feed"><div class="cr6-feedl">${items||'<p class="cr6-empty">Sin publicaciones.</p>'}</div><h3>REDES SOCIALES</h3></section>`;
 }
@@ -354,15 +380,21 @@ function tileHito(){
 function heroe(){
  return`<section class="cr6-hero"><canvas id="kPrev" width="96" height="112"></canvas>
   <div class="cr6-name"><small>${handle(C.f)}</small><span>${esc(C.f.first||C.f.name.split(' ')[0])}</span><b>${esc(C.f.last)}</b>
-  <div class="cr6-div">${divName(C.div).toUpperCase()} · ${regional()?'LIGA REGIONAL':C.champ?'🏆 CAMPEÓN':C.rank>=16?'SIN RANKING':'#'+C.rank}</div>
+  <div class="cr6-div">${divName(C.div).toUpperCase()} · ${regional()?promo().corto:C.champ?'🏆 CAMPEÓN':C.rank>=16?'SIN RANKING':'#'+C.rank}</div>
   ${(C.belts||[]).length?`<div class="cr6-belts">${C.belts.map(b=>`<span title="${divName(b)}">🏆 ${divName(b).replace(/^Peso /,'').toUpperCase()}</span>`).join('')}</div>`:''}
   <div class="cr6-rec">${C.rec.w}-${C.rec.l}-${C.rec.d}${C.champ?` · ${C.defenses} DEFENSAS`:''} · ${edadDe()} AÑOS</div></div></section>`;
 }
+function panelLlamadas(){
+ const L=C.llamadas;return`<section class="cr6-tile cr6-offers cr6-call"><h3>📞 ${L.length>1?'TE LLAMAN DOS PROMOTORAS':'TE LLAMA '+PROMOS[L[0]].n.toUpperCase()}</h3>${C.last?`<p class="cr6-last">${esc(C.last)}</p>`:''}
+  <div class="cr6-calls">${L.map(id=>{const P=PROMOS[id];return`<div class="cr6-callc" style="--c1:${P.col}">${logoPromo(id,1)}<div><b>${P.n}</b><small>${P.desc}</small>${P.bolsa?`<small>Bolsas desde ${fmtMoney(P.bolsa([46,55,64][P.tier]))}</small>`:'<small>Contrato por 4 peleas · ranking y cinturones</small>'}</div><button class="cr6-go" data-firmar="${id}">FIRMAR</button></div>`;}).join('')}</div></section>`;
+}
 function panelOfertas(){
- return`<section class="cr6-tile cr6-offers"><h3>${regional()?`LIGA REGIONAL · ${Math.min(C.rec.w,REG_WINS)}/${REG_WINS} VICTORIAS PARA EL CONTRATO`:C.champ?'ELEGÍ TU DEFENSA':C.offers[0].title?'¡PELEA POR EL TÍTULO!':'OFERTAS DE PELEA'}</h3>
+ if(C.llamadas&&C.llamadas.length)return panelLlamadas();
+ const cs=consejoOferta();
+ return`<section class="cr6-tile cr6-offers"><h3>${regional()?`${promo().corto} · PELEA ${((C.orgRec&&C.orgRec.n)||0)+1} DE ${promo().peleas}${C.offers[0]&&C.offers[0].orgTitle?' · ¡POR EL CINTURÓN!':''}`:C.champ?'ELEGÍ TU DEFENSA':C.offers[0].title?'¡PELEA POR EL TÍTULO!':'OFERTAS DE PELEA'}</h3>
   ${C.last?`<p class="cr6-last">${esc(C.last)}</p>`:''}
-  <div class="cr6-olist">${C.offers.map((o,i)=>`<button class="cr6-offer ${o.title?'title':''} ${o.rival?'rival':''}" data-of="${i}">${retrato('kOf'+i)}<div><b>${esc(o.f.name)}</b><small>${o.rival?'🔥 REVANCHA · ':''}${o.f.regional?'Regional':oppRank(o.f)} · Nivel ${Math.round(ovr(o.f))} · ${o.f.style}</small><small>Campamento: ${o.weeks} semanas · ${o.title?5:3} rounds</small></div><em>${fmtMoney(purse(o.f,o.title))}</em></button>`).join('')}</div>
-  <p class="cr6-note">Tu nivel: ${Math.round(ovr(C.f))}. Más semanas de campamento = más tiempo para llegar en tu pico.</p></section>`;
+  <div class="cr6-olist">${C.offers.map((o,i)=>`<button class="cr6-offer ${o.title||o.orgTitle?'title':''} ${o.rival?'rival':''} ${cs&&cs.i===i?'rec':''}" data-of="${i}">${retrato('kOf'+i)}<div><b>${esc(o.f.name)}</b><small>${cs&&cs.i===i?'⭐ RECOMENDADA · ':''}${o.rival?'🔥 REVANCHA · ':''}${o.orgTitle?'🏆 CINTURÓN '+promo().corto+' · ':''}${o.f.regional?promo().corto:oppRank(o.f)} · Nivel ${Math.round(ovr(o.f))} · ${o.f.style}</small><small>Campamento: ${o.weeks} semanas · ${o.title||o.orgTitle?5:3} rounds</small></div><em>${fmtMoney(purse(o.f,o.title))}</em></button>`).join('')}</div>
+  ${cs?`<p class="cr6-coach">🧢 ${esc(cs.txt)}</p>`:''}<p class="cr6-note">Tu nivel: ${Math.round(ovr(C.f))}. Más semanas de campamento = más tiempo para llegar en tu pico.</p></section>`;
 }
 function vistaInicio(){
  const centro=C.retired?`<section class="cr6-tile"><h3>CARRERA TERMINADA</h3><p class="cr6-last">${esc(C.last)}</p><div class="cr6-actbtns"><button class="cr6-go" data-tab="micarrera">VER TU LEGADO</button></div></section>${tileRedes(3)}`:C.step==='offers'?panelOfertas():`${tileRedes(4)}${tileHito()}`;
@@ -434,9 +466,6 @@ function vistaMiCarrera(){
   <section class="cr6-tile"><h3>TU GIMNASIO</h3><div class="cr6-foot"><span>${G[0]}</span><b>Puntos ×${G[2].toFixed(2).replace('.',',')}</b></div>
    <p class="cr6-note">Mejor gimnasio = más puntos de evolución por entrenar, menos riesgo de lesión y de fallar el peso.</p>
    ${NX?`<div class="cr6-actbtns"><button class="cr6-go" id="kGym" ${C.money<NX[1]?'disabled':''}>MUDARTE A ${NX[0].toUpperCase()} · ${fmtMoney(NX[1])}</button></div>${C.money<NX[1]?`<p class="cr6-note">Te faltan ${fmtMoney(NX[1]-C.money)}.</p>`:''}`:'<p class="cr6-note">Ya entrenás con el mejor equipo.</p>'}</section>
-  <section class="cr6-tile"><h3>PATROCINADORES · ${(C.spons||[]).length}/2</h3>
-   ${(C.spons||[]).map(id=>{const S=SPONS.find(x=>x.id===id);return`<div class="cr6-spon on"><b>${S.n}</b><small>${fmtMoney(S.pago)} por pelea + ${fmtMoney(S.bono)} ${CONDS[S.cond]}</small><button data-spoff="${S.id}">Dejar</button></div>`;}).join('')}
-   ${disp.map(S=>{const ok=C.fans>=S.fans,full=(C.spons||[]).length>=2;return`<div class="cr6-spon ${ok?'':'off'}"><b>${S.n}</b><small>${fmtMoney(S.pago)} por pelea + ${fmtMoney(S.bono)} ${CONDS[S.cond]}${ok?'':` · necesitás ${fmtNum(S.fans)} fans`}</small><button data-spon="${S.id}" ${ok&&!full?'':'disabled'}>Firmar</button></div>`;}).join('')}</section>
   <section class="cr6-tile"><h3>CAMBIAR DE DIVISIÓN</h3><p class="cr6-note">${C.champ?'Siendo campeón, subir o bajar te da directo la pelea por el otro cinturón: ¡podés ser doble campeón!':'Probá suerte en otra división. Bajar de peso cuesta forma; subir te hace más chico que los rivales.'}</p>
    <div class="cr6-actbtns">${regional()||C.step!=='offers'?'<em class="cr6-note">Disponible entre peleas, ya con contrato.</em>':vec.map(d=>`<button class="cr6-btn" data-mvdiv="${d.id}">${d.lb<D.lb?'⬇ BAJAR A':'⬆ SUBIR A'} ${d.nombre.toUpperCase()} (${d.kg} kg)</button>`).join('')}</div></section></div>`;
 }
@@ -445,11 +474,28 @@ function cambiarDivision(id){
  const baja=D.lb<(DIVISIONES.find(d=>d.id===antes)||D).lb;
  C.div=id;C.f.div=id;
  if(C.champ){C.champ=false;C.rank=1;C.last=`Dejás en pausa tu cinturón de ${divName(antes).toLowerCase()} y vas por el de ${D.nombre.toLowerCase()}: te dan la pelea por el título.`;
-  post(...CUENTAS[0].slice(0,2),'org',`¡SUPERPELEA! El campeón ${handle(C.f)} sube por el cinturón de ${D.nombre.toLowerCase()}. ¿Doble campeón?`);}
+  post(...orgCta(),'org',`¡SUPERPELEA! El campeón ${handle(C.f)} sube por el cinturón de ${D.nombre.toLowerCase()}. ¿Doble campeón?`);}
  else{C.rank=Math.min(16,C.rank+4);C.last=`Nueva división: ${D.nombre}. Arrancás ${C.rank>=16?'sin ranking':'#'+C.rank}.`;}
  if(baja){C.fitness=Math.max(20,C.fitness-15);C.longevity=Math.max(0,C.longevity-3);}
  else{C.f.s.pow=Math.max(35,C.f.s.pow-2);C.f.s.spd=Math.min(99,C.f.s.spd+1);}
  C.offers=makeOffers();saveC();kTab='inicio';renderCareer();
+}
+function vistaEquipo(){
+ const K=coach(),a=amistad(),disp=SPONS.filter(S=>!(C.spons||[]).includes(S.id)),cupo=cuposSpons(),cj=C.camp&&C.camp.consejo;
+ return`<div class="cr6-grid2">
+  <section class="cr6-tile cr6-coachc"><h3>TU ENTRENADOR</h3>
+   <div class="cr6-ch"><i class="cr6-cav">${K.n.split(' ').map(w=>w[0]).join('')}</i><div><b>${K.n} ${K.apodo}</b><small>${K.esp} · ${'★'.repeat(K.prest)}${'☆'.repeat(5-K.prest)} · ${K.gym}</small><small>${K.costo?`Cobra el ${Math.round(K.costo*100)} % de cada bolsa`:'No te cobra nada'}</small></div></div>
+   <div class="cr6-foot"><span>Amistad: ${nivelAmistad(a)}</span><b>${a}/100</b></div><i class="cr6-prog amis"><u style="width:${a}%"></u></i>
+   <ul class="cr6-pre"><li><span>Desgaste por pelea</span><b class="ok">−${Math.round(a/2)} %</b></li><li><span>Puntos entrenando ${K.ent===-1?'todo':ENTRENOS[K.ent][0].toLowerCase()}</span><b class="ok">+${12*K.prest} %</b></li><li><span>Estudia al rival por vos</span><b>${K.prest>=3?'Sí':'No'}</b></li></ul>
+   <p class="cr6-coach">🧢 ${esc(cj?cj.txt:`${K.n.split(' ')[0]}: "${pick(K.frases)}"`)}</p>
+   <p class="cr6-note">La amistad sube con cada semana de campamento y cada pelea juntos. Más amistad = tu cuerpo se gasta menos.</p></section>
+  <section class="cr6-tile"><h3>CAMBIAR DE ENTRENADOR</h3>
+   ${COACHES.filter(x=>x.id!==K.id).map(x=>{const ok=coachDisponible(x),am=amistad(x.id);return`<div class="cr6-spon ${ok?'':'off'}"><i class="cr6-cav sm">${x.n.split(' ').map(w=>w[0]).join('')}</i><b>${x.n} ${x.apodo}</b><small>${x.esp} · ${'★'.repeat(x.prest)} · ${x.costo?Math.round(x.costo*100)+' % de la bolsa':'gratis'}${am?` · amistad ${am}`:''}${ok?'':` · ${x.reqRank?'necesitás estar en el top '+x.reqRank+' de UW':'necesitás estar en '+ESCALERA[x.req].map(i=>PROMOS[i].corto).join(' o ')+' o más arriba'}`}</small><button data-coach="${x.id}" ${ok&&C.step!=='camp'?'':'disabled'}>Contratar</button></div>`;}).join('')}
+   <p class="cr6-note">${C.step==='camp'?'No podés cambiar de entrenador en medio del campamento.':'Si te vas, la amistad con el anterior queda guardada (por si volvés), pero arrancás de cero con el nuevo.'}</p></section>
+  <section class="cr6-tile cr6-spwrap"><h3>PATROCINADORES · ${(C.spons||[]).length}/${cupo}</h3>
+   ${(C.spons||[]).map(id=>{const S=SPONS.find(x=>x.id===id);return`<div class="cr6-spon on"><span class="cr6-logo">${logoMarca(S.id)}</span><b>${S.n}</b><small>${fmtMoney(S.pago)} por pelea + ${fmtMoney(S.bono)} ${CONDS[S.cond]}</small><button data-spoff="${S.id}">Dejar</button></div>`;}).join('')}
+   ${disp.map(S=>{const okF=C.fans>=S.fans,okO=tierDe()>=S.org,full=(C.spons||[]).length>=cupo;return`<div class="cr6-spon ${okF&&okO?'':'off'}"><span class="cr6-logo">${logoMarca(S.id)}</span><b>${S.n}</b><small>${fmtMoney(S.pago)} por pelea + ${fmtMoney(S.bono)} ${CONDS[S.cond]}${okO?'':` · solo para peleadores de ${ESCALERA[S.org].map(i=>PROMOS[i].corto).join(' o ')} o más`}${okF?'':` · necesitás ${fmtNum(S.fans)} fans`}</small><button data-spon="${S.id}" ${okF&&okO&&!full?'':'disabled'}>Firmar</button></div>`;}).join('')}
+   <p class="cr6-note">Las marcas grandes solo firman con peleadores de las mejores promotoras. En UW tenés 3 lugares.</p></section></div>`;
 }
 function vistaRedes(){return`<div class="cr6-grid2">${tileRedes(30)}<section class="cr6-tile"><h3>TU CUENTA</h3><div class="cr6-foot"><span>${handle(C.f)}</span><b>${fmtNum(C.fans)} seguidores</b></div><p class="cr6-note">Publicá desde la pestaña SEMANA durante el campamento. El trash talk sube más el hype, pero motiva al rival.</p></section></div>`;}
 function renderCareer(){
@@ -468,7 +514,7 @@ function renderCareer(){
   return;
  }
  if(kTab==='pelea'&&C.step!=='fight')kTab='inicio';
- const v={micarrera:vistaMiCarrera,inicio:vistaInicio,semana:vistaSemana,pelea:vistaPelea,evolucion:vistaEvolucion,ranking:vistaRanking,historial:vistaHistorial,hitos:vistaHistorial,redesall:vistaRedes}[kTab]||vistaInicio;
+ const v={micarrera:vistaMiCarrera,inicio:vistaInicio,semana:vistaSemana,pelea:vistaPelea,evolucion:vistaEvolucion,ranking:vistaRanking,historial:vistaHistorial,hitos:vistaHistorial,redesall:vistaRedes,equipo:vistaEquipo}[kTab]||vistaInicio;
  B.innerHTML=crHud()+`<div class="cr6-body">${v()}</div>`;
  const port=(id,f,face)=>{const cv=$('#'+id);if(cv)drawPortrait(cv,f,face);};
  if(C.opp){port('kHudP',C.f,1);port('kHudR',C.opp,-1);port('kFP',C.f,1);port('kFR',C.opp,-1);}
@@ -477,15 +523,15 @@ function renderCareer(){
 /* ---------- Editar peleador ---------- */
 function editarPeleador(){
  if(C.f.sprite){showOv(`<h3>EDITAR PELEADOR</h3><p class="sub">${esc(C.f.name)} usa su propio dibujo: no se le puede cambiar la apariencia. Solo el apodo.</p>
-  <input id="kNick" value="${esc((C.f.nick||'').replace(/"/g,''))}" placeholder="Apodo" style="width:100%;box-sizing:border-box;margin:6px 0">
+  <input id="kNick" value="${esc((C.f.nick||'').replace(/"/g,''))}" placeholder="Apodo" style="width:100%;box-sizing:border-box;margin:6px 0"><label>Música de entrada</label><select id="kWalk" style="width:100%;box-sizing:border-box;margin:4px 0 2px">${musOpciones(C.walkout||'')}</select><small style="display:block;color:#8b93a5;margin-bottom:6px">Suena cuando salís a pelear. Podés sumar tus canciones desde el botón ♪ del menú.</small>
   <div class="btns"><button class="go" id="kEdOk">GUARDAR</button><button class="alt" data-act="close">CANCELAR</button></div>`);
-  $('#kEdOk').onclick=()=>{const n=$('#kNick').value.trim();C.f.nick=n?`"${n}"`:'';saveC();hideOv();renderCareer();};return;}
+  $('#kEdOk').onclick=()=>{const n=$('#kNick').value.trim();C.f.nick=n?`"${n}"`:'';C.walkout=$('#kWalk').value||null;saveC();hideOv();renderCareer();};return;}
  const L=C.f.look=C.f.look||{};const ed={...L};
  const pelos=[-1,...CB.pelos.map((_,i)=>i)],pc=['','#141110','#3a2416','#6b4423','#a8743a','#d8b46a','#b5502a','#9a9a9a','#e8e4dc'];
  const sw=(k,arr)=>arr.map(c=>`<button class="sw" data-ek="${k}" data-ev="${c}" style="background:${c||'linear-gradient(135deg,#555,#222)'}" aria-pressed="${(ed[k]||'')===c}" aria-label="${c||'Natural'}"></button>`).join('');
  showOv(`<h3>EDITAR PELEADOR</h3><div class="cr6-edit">
   <canvas id="kEdPrev" width="96" height="112"></canvas>
-  <div><label>Apodo</label><input id="kNick" value="${esc((C.f.nick||'').replace(/"/g,''))}" placeholder="Apodo">
+  <div><label>Apodo</label><input id="kNick" value="${esc((C.f.nick||'').replace(/"/g,''))}" placeholder="Apodo"><label>Música de entrada</label><select id="kWalk" style="width:100%;box-sizing:border-box;margin:4px 0 2px">${musOpciones(C.walkout||'')}</select><small style="display:block;color:#8b93a5;margin-bottom:6px">Suena cuando salís a pelear. Podés sumar tus canciones desde el botón ♪ del menú.</small>
   <label>Peinado</label><div class="cr6-heads">${pelos.map(i=>`<button class="hb-pein" data-ek="peinado" data-ev="${i}" aria-pressed="${String(peinadoDe(C.f))===String(i)}"><canvas width="40" height="40" data-ph="${i}"></canvas></button>`).join('')}</div>
   <label>Color de pelo</label><div class="opts">${sw('pelo',pc)}</div>
   <label>Piel</label><div class="opts">${sw('skin',GEN.skins)}</div>
@@ -497,7 +543,7 @@ function editarPeleador(){
  redraw();
  ov.onclick=e=>{const b=e.target.closest('[data-ek]');if(!b)return;const k=b.dataset.ek;ed[k]=k==='peinado'?+b.dataset.ev:(b.dataset.ev||null);
   ov.querySelectorAll(`[data-ek="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b));redraw();};
- $('#kEdOk').onclick=()=>{const n=$('#kNick').value.trim();C.f.nick=n?`"${n}"`:'';C.f.look=ed;ov.onclick=null;saveC();hideOv();renderCareer();};
+ $('#kEdOk').onclick=()=>{const n=$('#kNick').value.trim();C.f.nick=n?`"${n}"`:'';C.walkout=$('#kWalk').value||null;C.f.look=ed;ov.onclick=null;saveC();hideOv();renderCareer();};
 }
 /* ---------- Eventos ---------- */
 $('#kBody').addEventListener('click',e=>{
@@ -507,12 +553,22 @@ $('#kBody').addEventListener('click',e=>{
  if(b.dataset.act){accion(b.dataset.act,b.dataset.arg);return;}
  if(b.dataset.evo){evolucionar(b.dataset.evo);return;}
  if(b.dataset.pesaje){pesaje(b.dataset.pesaje);return;}
- if(b.dataset.spon){C.spons=C.spons||[];if(C.spons.length<2){C.spons.push(b.dataset.spon);const S=SPONS.find(x=>x.id===b.dataset.spon);post(S.n.split(' · ')[0],'@'+S.id,'pro',`Damos la bienvenida a ${handle(C.f)} a nuestro equipo. 💪`);}saveC();renderCareer();return;}
+ if(b.dataset.spon){C.spons=C.spons||[];if(C.spons.length<cuposSpons()){C.spons.push(b.dataset.spon);const S=SPONS.find(x=>x.id===b.dataset.spon);post(S.marca,'@'+S.id,'pro',`Damos la bienvenida a ${handle(C.f)} a la familia ${S.marca}. 💪`);}saveC();renderCareer();return;}
+ if(b.dataset.coach){const nx=COACHES.find(x=>x.id===b.dataset.coach);if(!nx||!coachDisponible(nx)||C.step==='camp')return;const vi=coach(),av=amistad();
+  post(vi.n,'@'+vi.id+'coach','coach',av>=50?`Me duele, pero entiendo. ${handle(C.f)} siempre va a tener las puertas abiertas acá. ❤️`:`${C.f.last} se va con ${nx.n}. Suerte.`);
+  C.coach=nx.id;C.amistad=C.amistad||{};if(C.amistad[nx.id]==null)C.amistad[nx.id]=5;
+  post(nx.n,'@'+nx.id+'coach','coach',`Bienvenido al ${nx.gym}, ${handle(C.f)}. ${pick(nx.frases)}`);
+  C.last=`Ahora te entrena ${nx.n} (${nx.esp}).`;saveC();renderCareer();return;}
+ if(b.dataset.firmar){const id=b.dataset.firmar,P=PROMOS[id];if(!P)return;C.llamadas=null;const de=promo();C.org=id;C.orgRec={n:0,w:0,l:0,d:0};C.r1ko=0;
+  if(id==='uw'){C.liga='pro';C.rank=16;C.contract={total:4,left:4,mult:1,bonoFin:50000,fins:0};C.hype=clamp(C.hype+12,0,100);
+   post(...orgCta(),'org',`Nuevo fichaje: ${handle(C.f)} llega desde ${de.n} con récord ${C.rec.w}-${C.rec.l}-${C.rec.d}. ¡Bienvenido a Ultimate Warrior! 🔴`);C.last=`¡Firmaste con ULTIMATE WARRIOR! Contrato por 4 peleas en la ${divName(C.div).toLowerCase()}. Arrancás sin ranking.`;}
+  else{C.liga='regional';C.hype=clamp(C.hype+(P.tier>de.tier?6:-4),0,100);post(...orgCta(),'org',`${handle(C.f)} firma con ${P.n}. ${P.tier>de.tier?'Viene en alza.':'Busca volver a levantar.'}`);C.last=`Firmaste con ${P.n}. ${P.peleas} peleas: con 4 victorias te llama la siguiente.`;}
+  C.offers=makeOffers();saveC();renderCareer();return;}
  if(b.dataset.spoff){C.spons=(C.spons||[]).filter(x=>x!==b.dataset.spoff);saveC();renderCareer();return;}
  if(b.dataset.mvdiv){cambiarDivision(b.dataset.mvdiv);return;}
  if(b.id==='kGym'){const NX=GYMS[(C.gym||0)+1];if(NX&&C.money>=NX[1]){C.money-=NX[1];C.gym=(C.gym||0)+1;post(C.f.name,handle(C.f),'yo',`Nueva casa: ${NX[0]}. A seguir creciendo.`);saveC();renderCareer();}return;}
  if(b.id==='kRetire'){if(!b.dataset.sure){b.dataset.sure='1';b.textContent='¿SEGURO? NO HAY VUELTA';return;}C.retired=true;C.step='retired';const[lp,lt]=legado();C.last=`Te retiraste con ${C.rec.w}-${C.rec.l}-${C.rec.d}. Legado: ${lp} (${lt}).`;
-  post(...CUENTAS[0].slice(0,2),'org',`${handle(C.f)} anuncia su retiro. Gracias por todo, ${lt.toLowerCase()}. 🙏`);saveC();renderCareer();return;}
+  post(...orgCta(),'org',`${handle(C.f)} anuncia su retiro. Gracias por todo, ${lt.toLowerCase()}. 🙏`);saveC();renderCareer();return;}
  if(b.dataset.reto!=null){C.camp.reto.acc=b.dataset.reto==='1';kLog.unshift(C.camp.reto.acc?`Aceptaste el reto: ${C.camp.reto.txt.toLowerCase()}. Si lo cumplís, +hype y fans.`:'Rechazaste el reto de los fans.');if(!C.camp.reto.acc)C.hype=Math.max(0,C.hype-2);saveC();renderCareer();return;}
  if(b.id==='kSimW'||b.id==='kSimW2'){simularSemana();return;}
  if(b.id==='kEndW'){terminarSemana();return;}

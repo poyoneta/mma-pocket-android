@@ -8,6 +8,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
+import android.content.Intent;
+import android.webkit.CookieManager;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -23,6 +27,8 @@ import androidx.webkit.WebViewAssetLoader;
  */
 public class MainActivity extends Activity {
     private WebView web;
+    private ValueCallback<Uri[]> elegirArchivo;          // para "Agregar tu música"
+    private static final int PEDIDO_ARCHIVO = 41;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -38,6 +44,25 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setAllowFileAccess(false);
         s.setTextZoom(100);                     // que el tamaño de letra del celular no rompa el diseño
+        // Spotify (reproductor embebido): necesita sus cookies dentro del juego
+        CookieManager.getInstance().setAcceptCookie(true);
+        CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
+
+        // Botón "+ AGREGAR TU MÚSICA": abre el selector de archivos del celular
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {
+                if (elegirArchivo != null) elegirArchivo.onReceiveValue(null);
+                elegirArchivo = cb;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("audio/*");
+                i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                try { startActivityForResult(Intent.createChooser(i, "Elegí tu música"), PEDIDO_ARCHIVO); }
+                catch (Exception e) { elegirArchivo = null; return false; }
+                return true;
+            }
+        });
 
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -50,6 +75,7 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                 Uri u = req.getUrl();
+                if (!req.isForMainFrame()) return false;   // lo que carga adentro (por ejemplo Spotify) sigue en el juego
                 // los links de afuera (por ejemplo el de Supabase del email) se abren en el navegador
                 if (!"appassets.androidplatform.net".equals(u.getHost())) {
                     try { startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
@@ -98,6 +124,22 @@ public class MainActivity extends Activity {
 
     @Override protected void onPause() { super.onPause(); web.onPause();
         web.evaluateJavascript("try{if(G&&curScreen==='fight'&&!G.paused)pause(true)}catch(e){}", null); }
+    @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if (req != PEDIDO_ARCHIVO || elegirArchivo == null) return;
+        Uri[] r = null;
+        if (res == RESULT_OK && data != null) {
+            if (data.getClipData() != null) {
+                int n = data.getClipData().getItemCount();
+                r = new Uri[n];
+                for (int i = 0; i < n; i++) r[i] = data.getClipData().getItemAt(i).getUri();
+            } else if (data.getData() != null) r = new Uri[]{ data.getData() };
+        }
+        elegirArchivo.onReceiveValue(r);
+        elegirArchivo = null;
+    }
+
     @Override protected void onResume() { super.onResume(); web.onResume(); }
     @Override protected void onSaveInstanceState(Bundle out) { super.onSaveInstanceState(out); web.saveState(out); }
 }
