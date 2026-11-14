@@ -7,7 +7,7 @@ const presEl=()=>$('#presenta');
 
 // Retrato: el cuadro de guardia del peleador, recortado de la cabeza a la cintura
 function presRetrato(cv,d){
- const S=spriteOf(d),g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
+ const S=(typeof sprite2==='function'&&!d.sprite&&sprite2(d))||spriteOf(d),g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
  if(!S||!S.frames||!S.frames.guard)return;
  const[sx,sy,w,h]=S.frames.guard[0],k=S.k||2;
  // recorte justo: de la cabeza a la cintura, sin el aire de los costados
@@ -43,7 +43,7 @@ function presentacion(listo){
  const recA=G.p.d.bio&&G.p.d.bio.record,recB=G.r.d.bio&&G.r.d.bio.record;
  $('#prRecA').textContent=recA||'';$('#prRecB').textContent=recB||'';
  presRetrato($('#prFotA'),G.p.d);presRetrato($('#prFotB'),G.r.d);
- el.className='presenta e1';el.hidden=false;PRES.on=true;PRES.t=0;PRES.fin=listo;PRES.ult=performance.now();PRES.esc3=false;
+ el.dataset.div=(G.p.d.div||G.r.d.div||'');el.className='presenta e1';el.hidden=false;PRES.on=true;PRES.t=0;PRES.fin=listo;PRES.ult=performance.now();PRES.esc3=false;
  cancelAnimationFrame(PRES.raf);PRES.raf=requestAnimationFrame(presPaso);
  if(typeof sfx==='function')sfx('whoosh');
 }
@@ -122,7 +122,7 @@ function octDibujar(k){
  if(J)lados.filter(l=>l.z>=zc).sort((a,b)=>b.z-a.z).forEach(l=>lado(l.i));
  // los dos peleadores parados en sus esquinas
  const pel=[[G.p,[-3.2,0,0],1],[G.r,[3.2,0,0],-1]].map(([f,p,fc])=>({f,p,fc,q:octP(C,p)})).filter(x=>x.q).sort((a,b)=>b.q[2]-a.q[2]);
- for(const x of pel){const S=spriteOf(x.f.d);if(!S||!S.frames||!S.frames.guard)continue;const[sx,sy,w,h,ax]=S.frames.guard[Math.floor(PRES.t*6)%S.frames.guard.length],kk=S.k||2;
+ for(const x of pel){const S=(typeof sprite2==='function'&&!x.f.d.sprite&&sprite2(x.f.d))||spriteOf(x.f.d);if(!S||!S.frames||!S.frames.guard)continue;const[sx,sy,w,h,ax]=S.frames.guard[Math.floor(PRES.t*6)%S.frames.guard.length],kk=S.k||2;
   const hp=C.F*3.4/x.q[2],sc=hp/(h*kk);
   // mira hacia el otro: según de qué lado queda en pantalla
   const otro=pel.find(o=>o!==x),mir=otro&&otro.q[0]<x.q[0]?-1:1;

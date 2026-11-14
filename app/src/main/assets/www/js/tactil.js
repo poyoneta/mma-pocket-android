@@ -13,9 +13,9 @@ const vpActive=()=>touchDev.matches&&!isPortrait()&&!PAD.on;
  const st=$('#vstick'),kn=$('#vknob'),R=40;
  const set=(dx,dy)=>{
   const d=Math.hypot(dx,dy),k=d>R?R/d:1;kn.style.transform=`translate(${dx*k}px,${dy*k}px)`;
-  input.left=dx<-16;input.right=dx>16;input.down=dy>22&&Math.abs(dy)>Math.abs(dx)*.6;
+  input.left=dx<-16;input.right=dx>16;input.up=dy<-18;input.dn=dy>18;
  };
- const end=e=>{if(VP.stick!==e.pointerId)return;VP.stick=null;kn.style.transform='';input.left=input.right=input.down=false;st.classList.remove('on');};
+ const end=e=>{if(VP.stick!==e.pointerId)return;VP.stick=null;kn.style.transform='';input.left=input.right=input.down=input.up=input.dn=false;st.classList.remove('on');};
  st.addEventListener('pointerdown',e=>{e.preventDefault();initAudio();const r=st.getBoundingClientRect();VP.stick=e.pointerId;VP.cx=r.left+r.width/2;VP.cy=r.top+r.height/2;
   st.setPointerCapture(e.pointerId);st.classList.add('on');set(e.clientX-VP.cx,e.clientY-VP.cy);});
  st.addEventListener('pointermove',e=>{if(VP.stick===e.pointerId)set(e.clientX-VP.cx,e.clientY-VP.cy);});

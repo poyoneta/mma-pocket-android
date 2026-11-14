@@ -14,9 +14,9 @@
 <meta name="apple-mobile-web-app-title" content="Pocket MMA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&display=swap">
-<link rel="stylesheet" href="css/estilos.css?v=30">
+<link rel="stylesheet" href="css/estilos.css?v=32">
 <!-- Imágenes del menú recortadas de tu captura (solo copia local) -->
-<link rel="stylesheet" href="css/menu-imagenes.css?v=30">
+<link rel="stylesheet" href="css/menu2.css?v=32"><link rel="stylesheet" href="css/menu-imagenes.css?v=32">
 </head>
 <body>
 <!-- Pantalla de carga: si algo falla al arrancar, muestra el error en vez de quedar en negro -->
@@ -35,50 +35,30 @@
 <div id="app">
 
   <!-- ============ MENÚ PRINCIPAL ============ -->
-  <section id="home" class="scr home" aria-label="Menú principal">
-    <div class="wrap">
-      <header class="topbar">
-        <div class="logo"><b>POCKET</b><span>MMA</span></div>
-        <div class="tb-r">
-          <span class="chip" id="hRec" hidden></span>
-          <label class="chk"><input type="checkbox" id="snd" checked> Sonido</label>
-          <button class="tbb mus-btn" id="musBtn" title="Reproductor de música">♪</button>
-          <button class="tbb" id="fsBtn" hidden>PANTALLA COMPLETA</button>
-          <button class="tbb" id="instBtn" hidden>⬇ INSTALAR APP</button>
-          <button class="tbb" id="nubeBtn" hidden>☁ GUARDAR EN LA NUBE</button>
-        </div>
-      </header>
-      <div class="tiles">
-        <button class="tile t-quick" data-go="quick">
-          <span class="tl">JUGAR</span>
-          <canvas class="tart" id="artQuick" width="140" height="100"></canvas>
-          <span class="tt">PELEA<br>RÁPIDA</span><span class="ts">Elegí dos y a pelear</span>
-        </button>
-        <button class="tile t-career" data-go="career">
-          <canvas class="tart" id="artCareer" width="90" height="100"></canvas>
-          <span class="tt">MODO<br>CARRERA</span><span class="ts" id="careerSub">Del regional al cinturón</span>
-        </button>
-        <button class="tile t-create" data-go="create">
-          <canvas class="tart" id="artCreate" width="90" height="100"></canvas>
-          <span class="tt">CREAR<br>PELEADOR</span><span class="ts">Look y atributos</span>
-        </button>
-        <button class="tile t-tourney" data-go="tourney">
-          <span class="tl">EVENTOS</span>
-          <canvas class="tart" id="artTourney" width="150" height="104"></canvas>
-          <span class="tt big">MODO<br>TORNEO</span><span class="ts">8 peleadores · cuartos, semis y final</span>
-        </button>
-        <button class="tile t-help" data-go="help">
-          <span class="tl">RECOMENDADO</span>
-          <canvas class="tart" id="artHelp" width="90" height="100"></canvas>
-          <span class="tt">CÓMO SE<br>PELEA</span><span class="ts">Controles y consejos</span>
-        </button>
-        <button class="tile t-rand" data-go="quickgen">
-          <canvas class="tart" id="artRand" width="140" height="100"></canvas>
-          <span class="tt">PELEADORES<br>AL AZAR</span><span class="ts">Generá rivales nuevos</span>
-        </button>
+  <section id="home" class="scr home m2" aria-label="Menú principal">
+    <div class="m2-bg" aria-hidden="true"></div>
+    <header class="m2-top">
+      <div class="logo"><b>POCKET</b><span>MMA</span></div>
+      <div class="tb-r">
+        <label class="chk"><input type="checkbox" id="snd" checked> Sonido</label>
+        <button class="tbb mus-btn" id="musBtn" title="Reproductor de música">♪</button>
+        <button class="tbb" id="fsBtn" hidden>PANTALLA COMPLETA</button>
+        <button class="tbb" id="instBtn" hidden>⬇ INSTALAR APP</button>
+        <button class="tbb" id="nubeBtn" hidden>☁ NUBE</button>
+        <button class="m2-perfil" data-go="career"><i aria-hidden="true"></i><span>PERFIL<small id="hRec" hidden></small></span></button>
       </div>
-      <footer class="hints"><span><kbd>Enter</kbd> Elegir</span><span><kbd>Esc</kbd> Volver</span><span class="note">Lo que creás y tu carrera se guardan en este navegador.</span></footer>
+    </header>
+    <div class="m2-row">
+      <button class="m2c m2-pelea" data-go="quick"><span class="m2-sec">JUGAR</span><span class="m2-art"></span><span class="m2-t">MODOS<br>DE PELEA</span><small>Pelea rápida · elegí dos y a pelear</small></button>
+      <button class="m2c m2-carrera" data-go="career"><span class="m2-art"></span><span class="m2-t top">MODO<br>CARRERA</span><small id="careerSub">Del regional al cinturón</small></button>
+      <button class="m2c m2-torneo" data-go="tourney"><span class="m2-art"></span><span class="m2-t big">MODO<br>TORNEO</span><small>8 peleadores · cuartos, semis y final</small></button>
+      <div class="m2-col">
+        <button class="m2c m2-crear" data-go="create"><span class="m2-t">CREAR<br>PELEADOR</span><small>Pelo, barba, short y estilo</small></button>
+        <button class="m2c m2-ayuda" data-go="help"><span class="m2-art"></span><span class="m2-t gold">¿NECESITÁS<br>AYUDA?</span><small>Mirá los controles y aprendé a pelear</small><b class="m2-play" aria-hidden="true">▶</b></button>
+      </div>
+      <button class="m2c m2-eventos" data-go="quickgen"><span class="m2-sec">EVENTOS</span><span class="m2-art"></span><span class="m2-t">PELEADORES<br>AL AZAR</span><small>Rivales nuevos</small></button>
     </div>
+    <footer class="m2-pie"><span><kbd>◀ ▶</kbd> Cambiar</span><span><kbd>Enter</kbd> Elegir</span><span class="note">Lo que creás y tu carrera se guardan en este navegador.</span></footer>
   </section>
 
   <!-- ============ PELEA RÁPIDA ============ -->
@@ -143,7 +123,7 @@
       <header class="sh"><button class="back" data-go="home">◀ MENÚ</button><h2>CREAR PELEADOR</h2><button class="alt sm" id="cNew">NUEVO</button></header>
       <div class="cgrid">
         <div class="cprev">
-          <canvas id="cPrev" width="96" height="112"></canvas>
+          <canvas id="cPrev" width="150" height="200"></canvas>
           <div class="nm" id="cpName"></div>
           <div class="meta" id="cpMeta"></div>
           <button class="alt" id="cRand">LOOK AL AZAR</button>
@@ -306,31 +286,35 @@
 </div>
 
 <!-- El orden importa: cada archivo usa cosas de los anteriores -->
-<script src="js/config.js?v=30"></script>
-<script src="data/peleadores.js?v=30"></script>
-<script src="data/sprites.js?v=30"></script>
-<script src="data/cuerpo-base.js?v=30"></script>
-<script src="js/dibujo.js?v=30"></script>
-<script src="js/escenarios.js?v=30"></script>
-<script src="js/cuerpos.js?v=30"></script>
-<script src="js/sonido.js?v=30"></script>
-<script src="js/juego.js?v=30"></script>
-<script src="js/menu.js?v=30"></script>
-<script src="js/navegacion.js?v=30"></script>
-<script src="js/crear.js?v=30"></script>
-<script src="js/torneo.js?v=30"></script>
-<script src="js/promotoras.js?v=30"></script>
-<script src="js/carrera.js?v=30"></script>
-<script src="js/fichas.js?v=30"></script>
-<script src="js/mando.js?v=30"></script>
-<script src="js/iconos.js?v=30"></script>
-<script src="js/tactil.js?v=30"></script>
-<script src="js/nube-config.js?v=30"></script>
-<script src="js/nube.js?v=30"></script>
-<script src="js/app.js?v=30"></script>
-<script src="js/musica.js?v=30"></script>
-<script src="js/presenta.js?v=30"></script>
-<script src="js/carga.js?v=30"></script>
-<script src="js/inicio.js?v=30"></script>
+<script src="js/config.js?v=32"></script>
+<script src="data/peleadores.js?v=32"></script>
+<script src="data/sprites.js?v=32"></script>
+<script src="data/cuerpo-base.js?v=32"></script>
+<script src="js/dibujo.js?v=32"></script>
+<script src="js/escenarios.js?v=32"></script>
+<script src="js/cuerpos.js?v=32"></script>
+<script src="data/cuerpo2.js?v=32"></script>
+<script src="data/suelo2.js?v=32"></script>
+<script src="js/cuerpos2.js?v=32"></script>
+<script src="js/sonido.js?v=32"></script>
+<script src="js/juego.js?v=32"></script>
+<script src="js/jaula3d.js?v=32"></script>
+<script src="js/menu.js?v=32"></script>
+<script src="js/navegacion.js?v=32"></script>
+<script src="js/crear.js?v=32"></script>
+<script src="js/torneo.js?v=32"></script>
+<script src="js/promotoras.js?v=32"></script>
+<script src="js/carrera.js?v=32"></script>
+<script src="js/fichas.js?v=32"></script>
+<script src="js/mando.js?v=32"></script>
+<script src="js/iconos.js?v=32"></script>
+<script src="js/tactil.js?v=32"></script>
+<script src="js/nube-config.js?v=32"></script>
+<script src="js/nube.js?v=32"></script>
+<script src="js/app.js?v=32"></script>
+<script src="js/musica.js?v=32"></script>
+<script src="js/presenta.js?v=32"></script>
+<script src="js/carga.js?v=32"></script>
+<script src="js/inicio.js?v=32"></script>
 </body>
 </html>

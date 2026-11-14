@@ -97,11 +97,11 @@ $('#tabPrev').onclick=()=>setVsTab(vsTab-1);$('#tabNext').onclick=()=>setVsTab(v
 // Escenario de la pelea rápida: el que quieras, o al azar
 (function(){
  const sel=$('#escSel');if(!sel)return;const grp={elite:'Sedes grandes',pro:'Ciudades',regional:'Liga regional',calle:'Callejeras'};
- sel.innerHTML='<option value="">Al azar</option>'+Object.keys(grp).map(n=>`<optgroup label="${grp[n]}">${ESCENARIOS.filter(e=>e.nivel===n).map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}</optgroup>`).join('');
+ sel.innerHTML='<option value="">Al azar</option>'+Object.keys(grp).map(n=>`<optgroup label="${grp[n]}">${ESCENARIOS.filter(e=>e.nivel===n&&!e.vieja).map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}</optgroup>`).join('');
  try{sel.value=localStorage.getItem('pmma-esc')||'';}catch(e){}
  sel.onchange=()=>{try{localStorage.setItem('pmma-esc',sel.value);}catch(e){}};
 })();
-function escQuick(){const v=$('#escSel')&&$('#escSel').value;return v||ESCENARIOS[Math.floor(Math.random()*ESCENARIOS.length)].id;}
+function escQuick(){const v=$('#escSel')&&$('#escSel').value;const L=ESCENARIOS.filter(e=>!e.vieja);return v||L[Math.floor(Math.random()*L.length)].id;}
 $('#go').onclick=()=>startFight(selP,selR,{kind:'quick',rounds:3,esc:escQuick()});
 // Teclado en la pantalla de elección
 document.addEventListener('keydown',e=>{

@@ -21,12 +21,32 @@ const ESCENARIOS=[
   lona:'#d9dccf',logo:['#00702b','#009c3b','#ffdf00','#002776'],apron:['#009c3b','#ffdf00','#002776','#fff'],pantalla:['#0a1a3a','#e07a3a'],sky:'rio'},
  {id:'cdmx',nombre:'Ciudad de México',lugar:'Ciudad de México, México',pais:'MEX',nivel:'pro',jaula:1,techo:['#07060a','#1d1414'],luces:['#ce1126','#006847','#ffffff'],tinte:'rgba(206,17,38,.1)',
   lona:'#d8d8d4',logo:['#004d33','#006847','#f2f2ee','#ce1126'],apron:['#006847','#fff','#ce1126','#fff'],pantalla:['#1a0f12','#a83a3a'],sky:'cdmx'},
- {id:'gimnasio',nombre:'Club de barrio',lugar:'Club del barrio, Córdoba',pais:'ARG',nivel:'regional',jaula:1,lona:'#2f6db5',logo:['#1d4f8a','#3b82d0','#e8eaed','#d20a0a'],apron:['#d20a0a','#fff','#2c5fb3','#fff'],fondo:'gimnasio'},
- {id:'galpon',nombre:'El galpón',lugar:'Galpón del puerto, Rosario',pais:'ARG',nivel:'regional',jaula:1,lona:'#9a9488',logo:['#4a4438','#6d6556','#c9c2b2','#b33a1a'],apron:['#3a3a3a','#6d6556','#3a3a3a','#b33a1a'],fondo:'galpon'},
- {id:'patio',nombre:'Patio',lugar:'Un patio en Córdoba',pais:'ARG',nivel:'calle',fondo:'patio',suelo:'pasto',s3d:'#5f8f3a'},
- {id:'playa',nombre:'Playa',lugar:'Playa de Copacabana, Río',pais:'BRA',nivel:'calle',fondo:'playa',suelo:'arena',s3d:'#e3c98f'},
- {id:'azotea',nombre:'Azotea',lugar:'Una azotea en Buenos Aires',pais:'ARG',nivel:'calle',fondo:'azotea',suelo:'cemento',s3d:'#7c7f86'}
+ {id:'gimnasio',vieja:1,nombre:'Club de barrio',lugar:'Club del barrio, Córdoba',pais:'ARG',nivel:'regional',jaula:1,lona:'#2f6db5',logo:['#1d4f8a','#3b82d0','#e8eaed','#d20a0a'],apron:['#d20a0a','#fff','#2c5fb3','#fff'],fondo:'gimnasio'},
+ {id:'galpon',vieja:1,nombre:'El galpón',lugar:'Galpón del puerto, Rosario',pais:'ARG',nivel:'regional',jaula:1,lona:'#9a9488',logo:['#4a4438','#6d6556','#c9c2b2','#b33a1a'],apron:['#3a3a3a','#6d6556','#3a3a3a','#b33a1a'],fondo:'galpon'},
+ {id:'patio',vieja:1,nombre:'Patio',lugar:'Un patio en Córdoba',pais:'ARG',nivel:'calle',fondo:'patio',suelo:'pasto',s3d:'#5f8f3a'},
+ {id:'playa',vieja:1,nombre:'Playa',lugar:'Playa de Copacabana, Río',pais:'BRA',nivel:'calle',fondo:'playa',suelo:'arena',s3d:'#e3c98f'},
+ {id:'azotea',vieja:1,nombre:'Azotea',lugar:'Una azotea en Buenos Aires',pais:'ARG',nivel:'calle',fondo:'azotea',suelo:'cemento',s3d:'#7c7f86'},
+ // ---- Escenarios con imágenes (fondo 360 + piso visto desde arriba). img: prefijo en assets/esc2/ ----
+ {id:'e_gimnasio',img:'01',nombre:'Gimnasio de boxeo',lugar:'Gimnasio de boxeo, Buenos Aires',pais:'ARG',nivel:'calle',jaula:0,s3d:'#3a2a20',techo:['#120d0c','#2a1d16']},
+ {id:'e_patio',img:'02',nombre:'Patio con parrilla',lugar:'Un patio en Córdoba',pais:'ARG',nivel:'calle',jaula:0,s3d:'#6b5a4a',techo:['#3b2a6b','#ff8a4a']},
+ {id:'e_club',img:'03',nombre:'Club de barrio',lugar:'Club de barrio, Argentina',pais:'ARG',nivel:'calle',jaula:0,s3d:'#9a5a2a',techo:['#20283a','#3a4a6a']},
+ {id:'e_favela',img:'04',nombre:'Terraza en la favela',lugar:'Una terraza en Río de Janeiro',pais:'BRA',nivel:'calle',jaula:0,s3d:'#6e6662',techo:['#0b1030','#25204a']},
+ {id:'e_copacabana',img:'05',nombre:'Copacabana',lugar:'Playa de Copacabana, Río',pais:'BRA',nivel:'calle',jaula:0,s3d:'#d9b46a',techo:['#4a2a6b','#ff9a4a']},
+ {id:'e_rosario',img:'06',nombre:'Galpón del puerto',lugar:'Galpón del puerto, Rosario',pais:'ARG',nivel:'regional',jaula:1,lona:'#cfc9bd',logo:['#4a4438','#e8742a','#f1ece2','#b33a1a'],apron:['#3a3a3a','#e8742a','#3a3a3a','#e8742a'],techo:['#140c06','#2a1a0c']},
+ {id:'e_saopaulo',img:'07',nombre:'Arena São Paulo',lugar:'São Paulo, Brasil',pais:'BRA',nivel:'regional',jaula:1,lona:'#d6d8cc',logo:['#00702b','#e8742a','#ffdf00','#002776'],apron:['#009c3b','#ffdf00','#009c3b','#e8742a'],techo:['#160a06','#2e1608']},
+ {id:'e_estadio',img:'08',nombre:'Estadio clásico',lugar:'Estadio cubierto, Buenos Aires',pais:'ARG',nivel:'regional',jaula:1,lona:'#d8d3c6',logo:['#3d77b0','#e8742a','#ffffff','#f6b40e'],apron:['#74acdf','#fff','#74acdf','#e8742a'],techo:['#140d06','#2e2010']},
+ {id:'e_mendoza',img:'09',nombre:'Noche en Mendoza',lugar:'Bodega al aire libre, Mendoza',pais:'ARG',nivel:'regional',jaula:1,lona:'#d4cfc6',logo:['#5a1e3a','#e8742a','#f3ead2','#7a2a4a'],apron:['#5a1e3a','#e8742a','#5a1e3a','#fff'],techo:['#1a0f2a','#3a2a4a']},
+ {id:'e_montevideo',img:'10',nombre:'Boliche de Montevideo',lugar:'Montevideo, Uruguay',pais:'URU',nivel:'regional',jaula:1,lona:'#d2cfe0',logo:['#2a1a5a','#ff2fd0','#f2e9ff','#27e3ff'],apron:['#ff2fd0','#27e3ff','#ff2fd0','#fff'],techo:['#0a0418','#1c0b2b']},
+ {id:'e_cdmx',img:'11',nombre:'Arena México',lugar:'Ciudad de México, México',pais:'MEX',nivel:'pro',jaula:1,lona:'#d8d8d4',logo:['#004d33','#d9b24c','#f2f2ee','#ce1126'],apron:['#006847','#fff','#ce1126','#d9b24c'],techo:['#07060a','#1d1414']},
+ {id:'e_medellin',img:'12',nombre:'Estadio Medellín',lugar:'Medellín, Colombia',pais:'COL',nivel:'pro',jaula:1,lona:'#d9dccf',logo:['#003893','#d9b24c','#fcd116','#ce1126'],apron:['#fcd116','#003893','#ce1126','#d9b24c'],techo:['#040818','#101a3a']},
+ {id:'e_santiago',img:'13',nombre:'Arena Santiago',lugar:'Santiago, Chile',pais:'CHI',nivel:'pro',jaula:1,lona:'#d6dae0',logo:['#0039a6','#d9b24c','#ffffff','#d52b1e'],apron:['#0039a6','#fff','#d52b1e','#d9b24c'],techo:['#0a0a1a','#2a1a3a']},
+ {id:'e_lima',img:'14',nombre:'Arena Lima',lugar:'Lima, Perú',pais:'PER',nivel:'pro',jaula:1,lona:'#ddd6c8',logo:['#8a1a1a','#d9b24c','#f6efe0','#d91023'],apron:['#d91023','#d9b24c','#d91023','#fff'],techo:['#140604','#2e0e08']},
+ {id:'e_obelisco',img:'15',nombre:'Carpa del Obelisco',lugar:'Av. 9 de Julio, Buenos Aires',pais:'ARG',nivel:'pro',jaula:1,lona:'#d6dae0',logo:['#3d77b0','#d9b24c','#ffffff','#f6b40e'],apron:['#74acdf','#fff','#74acdf','#d9b24c'],techo:['#04070c','#101d2c']}
 ];
+// imágenes de los escenarios nuevos (se cargan cuando hacen falta)
+const escImgs={};
+function escImg(E){if(!E||!E.img)return null;let o=escImgs[E.img];if(!o){o=escImgs[E.img]={f:new Image(),p:new Image()};const M=typeof ESC2_SRC!=='undefined'?ESC2_SRC:{};o.f.src=M[E.img+'-fondo']||'assets/esc2/'+E.img+'-fondo.jpg';o.p.src=M[E.img+'-piso']||'assets/esc2/'+E.img+'-piso.jpg';}
+ return o.f.complete&&o.f.naturalWidth&&o.p.complete&&o.p.naturalWidth?o:null;}
 const escDe=id=>ESCENARIOS.find(e=>e.id===id)||null;
 const escPick=arr=>escDe(arr[Math.floor(Math.random()*arr.length)]);
 const escNivel=n=>ESCENARIOS.filter(e=>e.nivel===n).map(e=>e.id);
@@ -190,6 +210,16 @@ function sueloCalle(E,r){
  else{R(0,96,W,H-96,'#7c7f86');for(let i=0;i<40;i++)R(Math.floor(r()*W),96+Math.floor(r()*48),2+Math.floor(r()*8),1,'rgba(0,0,0,.1)');
   c.strokeStyle='rgba(240,240,240,.55)';c.lineWidth=1;c.beginPath();c.ellipse(W/2,121,W*.36,15,0,0,Math.PI*2);c.stroke();
   c.fillStyle='rgba(30,40,60,.25)';c.beginPath();c.ellipse(W*.2,132,14,3,0,0,Math.PI*2);c.fill();}
+}
+// Escenarios con imágenes, vista de costado vieja (piso y algunas pantallas): fondo arriba y piso aplastado abajo
+function fondoImg(E,r){
+ const IM=escImg(E);
+ if(!IM){R(0,0,W,H,(E.techo||['#111'])[0]);const o=escImgs[E.img];if(o&&!o.esp){o.esp=1;const re=()=>{if(escImg(E)&&typeof G!=='undefined'&&G&&G.esc===E)bgS=buildBg();};o.f.addEventListener('load',re);o.p.addEventListener('load',re);}return;}
+ const f=IM.f,sw=Math.min(f.width,f.height*W/96);c.imageSmoothingEnabled=true;
+ c.drawImage(f,(f.width-sw)/2,0,sw,f.height,0,0,W,96);
+ if(!E.jaula){const p=IM.p;c.drawImage(p,0,p.height*.3,p.width,p.height*.4,0,96,W,H-96);}
+ c.imageSmoothingEnabled=false;
+ if(E.jaula)jaulaYLona(E,r);
 }
 // La jaula y la lona (para los escenarios con octágono)
 function jaulaYLona(E,r){

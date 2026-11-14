@@ -24,9 +24,9 @@ function logoPromo(id,big){const P=PROMOS[id]||PROMOS.uw;return`<span class="pm-
 // sedes de cada promotora
 function sedesPromo(){
  const o=C.org,w=(C.orgRec&&C.orgRec.n)||0;
- if(o==='amateur')return w<2?['patio','playa','azotea']:['patio','playa','azotea','gimnasio'];
- if(o==='ffc')return['galpon','gimnasio','galpon','buenos_aires'];
- if(o==='zenit')return C.opp&&C.opp.orgTitle?['abu_dhabi','riad']:['abu_dhabi','riad','cdmx','rio'];
+ if(o==='amateur')return w<2?['e_patio','e_favela','e_copacabana','e_club']:['e_gimnasio','e_patio','e_club','e_favela','e_copacabana'];
+ if(o==='ffc')return['e_rosario','e_saopaulo','e_estadio','e_mendoza','e_montevideo'];
+ if(o==='zenit')return C.opp&&C.opp.orgTitle?['e_obelisco','e_lima','abu_dhabi']:['e_cdmx','e_medellin','e_santiago','e_lima','e_obelisco'];
  if(o==='pcl')return C.opp&&C.opp.orgTitle?['nueva_york']:['nueva_york','rio','cdmx','buenos_aires'];
  return null;
 }

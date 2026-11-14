@@ -34,7 +34,7 @@ function showScreen(id){
  else if(id==='create')openCreate();
  else if(id==='tourney')renderTourney();
  else if(id==='career')renderCareer();
- if(id!=='fight'){const f=el.querySelector('.tile,.back');if(f)f.focus({preventScroll:true});}
+ if(id!=='fight'){const f=el.querySelector('.m2c,.tile,.back');if(f)f.focus({preventScroll:true});}
 }
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-go]');if(!b)return;
@@ -57,7 +57,7 @@ function renderHome(){
 function showHelp(){
  showOv(`<h3>CÓMO SE PELEA</h3><ul class="help">
   <li>Caminá y medí la distancia: el jab, el recto y las patadas llegan lejos; los cross y el uppercut hay que tirarlos encima.</li>
-  <li>Cuando el rival <b>brilla en amarillo</b> está por pegarte: agachate para que pase por arriba, cubrite o alejate. Si falla, aparece <b>¡CONTRA!</b> y tus golpes entran mejor.</li>
+  <li>Moverte al costado (<b>↑ ↓</b> o el stick para arriba / abajo) te hace girar alrededor del rival por todo el octógono. Cuando el rival <b>brilla en amarillo</b> está por pegarte: correte al costado y el golpe pasa de largo, cubrite o alejate. Si falla, aparece <b>¡CONTRA!</b> y tus golpes entran mejor.</li>
   <li>Cubrirse gasta la barra <b>BLOQUEO</b>. Si se vacía te rompen la guardia y quedás expuesto: no te quedes cubierto todo el tiempo.</li>
   <li>Si <b>brilla en azul</b> va al derribo: mantené cubrirse para sprawlear o alejate.</li>
   <li>En el piso tocá la acción cuando la marca blanca pase por la <b>zona verde</b>. El centro dorado es perfecto.</li>
@@ -71,6 +71,7 @@ function keyCap(g,x,y,ch,on){g.fillStyle='#07080c';g.fillRect(x-1,y-1,13,14);g.f
 function die(g,x,y,n){g.fillStyle='#07080c';g.fillRect(x-1,y-1,18,18);g.fillStyle='#f4f5f7';g.fillRect(x,y,16,16);g.fillStyle='#c9ccd2';g.fillRect(x,y+14,16,2);g.fillStyle='#c8202f';const P={1:[[7,7]],2:[[3,3],[11,11]],3:[[3,3],[7,7],[11,11]],4:[[3,3],[11,3],[3,11],[11,11]],5:[[3,3],[11,3],[7,7],[3,11],[11,11]],6:[[3,3],[11,3],[3,7],[11,7],[3,11],[11,11]]}[n];for(const[a,b]of P)g.fillRect(x+a,y+b,3,3);}
 function shadowFig(g,f,x,gy,face,col){const prev=c;c=g;blitFighter({d:f,hp:100},{pose:'guard',bob:0,sil:col},x,gy,face,0);c=prev;}
 function drawHomeArt(t){
+ if(!$("#artQuick"))return;
  // Pelea rápida: una patada alta que conecta
  {const g=$('#artQuick').getContext('2d');g.clearRect(0,0,140,100);
   const ph=t%2.6;let pa='guard',pb='guard',hit=-1;
@@ -110,3 +111,9 @@ if(document.fullscreenEnabled){
  document.addEventListener('fullscreenchange',()=>{fb.textContent=document.fullscreenElement?'SALIR DE PANTALLA COMPLETA':'PANTALLA COMPLETA';setTimeout(resize,100);});
 }
 $('#snd').onchange=e=>{sound=e.target.checked;};
+// Menú nuevo: flechas para pasar de tarjeta en tarjeta
+document.addEventListener('keydown',e=>{
+ if(curScreen!=='home'||!$('#ov').hidden)return;
+ const cs=[...document.querySelectorAll('#home .m2c')],i=cs.indexOf(document.activeElement);
+ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const n=i<0?0:(i+(e.key==='ArrowRight'?1:-1)+cs.length)%cs.length;cs[n].focus();}
+});

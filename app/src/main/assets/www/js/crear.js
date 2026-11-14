@@ -3,10 +3,12 @@ const FLAGS=['ARG','BRA','URU','CHI','PAR','BOL','PER','COL','VEN','ECU','MEX','
 // [clave, etiqueta, tipo, opciones]  tipo: sw = colores, swn = colores con "ninguno", txt = texto
 // Apariencia: cuerpo dibujado (tu hoja) + peinado + colores
 const LOOKOPTS=[
- ['peinado','Peinado','head',null],
- ['pelo','Color de pelo','hairc',['#141110','#3a2416','#6b4423','#a8743a','#d8b46a','#b5502a','#9a9a9a','#e8e4dc']],
+ ['pel','Peinado','n2','pel'],
+ ['bar','Barba','n2','bar'],
+ ['pelo','Color de pelo y barba','hairc',['#141110','#3a2416','#6b4423','#a8743a','#d8b46a','#b5502a','#9a9a9a','#e8e4dc']],
  ['skin','Piel','sw',GEN.skins],
- ['short','Short','ropa','short'],
+ ['sho','Short','n2','sho'],
+ ['shorts','Color del short','sw',SH_COLS],
  ['guante','Guantes','ropa','guante']
 ];
 const BUDGET=560,SMIN=40,SMAX=95;
@@ -42,6 +44,7 @@ function optHtml(k,t,opts){
   return html;
  }
  if(t==='ropa')return ropaHtml(opts,v,'data-lk="'+k+'"');
+ if(t==='n2'){const L2=look2(draftFighter());return pick2Html(k,L2[k],'data-lk="'+k+'"');}
  const sw=c=>`<button class="sw" style="background:${c}" data-lk="${k}" data-lv="${c}" aria-pressed="${v===c}" aria-label="Color ${c}"></button>`;
  if(t==='sw')return opts.map(sw).join('');
  if(t==='hairc')return`<button class="ob" data-lk="${k}" data-lv="" aria-pressed="${!v}">Natural</button>`+opts.map(sw).join('');
@@ -84,6 +87,7 @@ function renderLook(){
 // miniaturas de los peinados (con la piel y el color de pelo elegidos)
 function drawHeadBtns(){
  if(typeof cbListo==='undefined'||cbListo<CB_TOTAL)return;
+ if(typeof pick2Draw==='function')pick2Draw($('#cLook'));
  $('#cLook').querySelectorAll('canvas[data-ropa]').forEach(cv=>dibujarRopa(cv,cv.dataset.ropa,+cv.dataset.ri));
  $('#cLook').querySelectorAll('canvas[data-ph]').forEach(cv=>dibujarCabeza(cv,+cv.dataset.ph,draft.look.skin,draft.look.pelo));
 }
@@ -91,7 +95,8 @@ $('#cRand').onclick=()=>{draft.look=randFighter('m').look;renderLook();};
 $('#cNew').onclick=()=>{newDraft();renderCreate();$('#cFirst').focus();};
 $('#cLook').addEventListener('click',e=>{
  const b=e.target.closest('[data-lk]');if(!b)return;
- const lk=b.dataset.lk;draft.look[lk]=lk==='peinado'||lk==='short'||lk==='guante'?+b.dataset.lv:(b.dataset.lv||null);
+ const lk=b.dataset.lk;draft.look[lk]=lk==='peinado'||lk==='short'||lk==='guante'||lk==='pel'||lk==='bar'||lk==='sho'?+b.dataset.lv:(b.dataset.lv||null);
+ if(lk==='pel')draft.look.peinado=pel2Viejo(+b.dataset.lv);
  if(lk==='short')draft.look.shorts=CB.shorts[+b.dataset.lv][4];
  b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
  if(b.dataset.lk==='skin'||b.dataset.lk==='pelo')drawHeadBtns();
@@ -118,4 +123,4 @@ $('#cList').addEventListener('click',e=>{
  if(draft&&draft.id===del.dataset.cd)draft.id=null;
  renderCList();cMsg('Peleador borrado.');
 });
-function drawCreatePrev(t){drawAnimated($('#cPrev').getContext('2d'),draftFighter(),44,108,1,seqPose(t),t,'#10141c');}
+function drawCreatePrev(t){if(typeof prev2==='function'&&c2Ok()){prev2($('#cPrev'),draftFighter(),t,Math.floor(t/2.4)%3===1?'jab':Math.floor(t/2.4)%3===2?'high':'guard');return;}drawAnimated($('#cPrev').getContext('2d'),draftFighter(),44,108,1,seqPose(t),t,'#10141c');}

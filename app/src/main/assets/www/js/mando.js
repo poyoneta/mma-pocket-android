@@ -41,7 +41,7 @@ function padPoll(t){
  const rep=k=>{if(!dirs[k]){PAD.hold[k]=0;return false;}if(!PAD.hold[k]){PAD.hold[k]=t+.35;return true;}if(t>=PAD.hold[k]){PAD.hold[k]=t+.12;return true;}return false;};
  const inFight=G&&!G.paused&&(G.phase==='fight'||G.phase==='intro');
  if(inFight){
-  padIn.left=dirs.left;padIn.right=dirs.right;padIn.down=dirs.down&&!now[5];padIn.block=now[5]&&!dirs.down;padIn.check=now[5]&&dirs.down;   // R1 = guardia alta · R1 + abajo = guardia baja
+  padIn.left=dirs.left;padIn.right=dirs.right;padIn.down=false;padIn.up=dirs.up&&!now[5];padIn.dn=dirs.down&&!now[5];padIn.block=now[5]&&!dirs.down;padIn.check=now[5]&&dirs.down;   // R1 = guardia alta · R1 + abajo = guardia baja
   if(edge(9))pause(true);
   else if(G.mode==='ground'){const bs=$(G.top==='p'?'#padTop':'#padBot').querySelectorAll('[data-k]');if(edge(2))doG(bs[0].dataset.k);if(edge(3))doG(bs[1].dataset.k);if(edge(1))doG(bs[2].dataset.k);}
   else{
@@ -50,7 +50,7 @@ function padPoll(t){
    if(edge(1))doP('low');if(edge(0))doP('high');if(edge(7))doP('td');
   }
  }else{
-  padIn.left=padIn.right=padIn.down=padIn.block=padIn.check=false;
+  padIn.left=padIn.right=padIn.down=padIn.up=padIn.dn=padIn.block=padIn.check=false;
   if(!$('#ov').hidden){
    const bs=[...$('#ovc').querySelectorAll('button')];
    if(rep('down')||rep('right'))moveFocusList(bs,1);if(rep('up')||rep('left'))moveFocusList(bs,-1);
